@@ -4,7 +4,7 @@ import sys
 app = Flask(__name__)
 
 f = open("pw.txt", "r")
-pw = f.read()
+pw = f.read().replace('\n','')
 
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
