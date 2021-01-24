@@ -40,9 +40,25 @@ def user_exists():
     exists = not cur.rowcount == 0
     if exists:
         row = cur.fetchall()
+        cur.close()
         return jsonify(exists=exists, role=row[0][0]), 200
     cur.close()
     return jsonify(exists=exists, role=""), 200
-    
+
+@app.route('/api/set_company', methods=['POST'])
+def set_company():
+    user = request.get_json() 
+    user_id = user.get('userID')
+    company = user.get('company')
+    cur = mysql.connection.cursor()
+    try:
+        cur.execute("INSERT INTO Employer VALUES (%s, %s)", (user_id, company))
+        mysql.connection.commit()
+    except:
+        cur.close()
+        return jsonify(message="Failed to insert company"), 409
+    cur.close()
+    return jsonify(message="Company set successfully"), 200
+
 if __name__ == '__main__':
     app.run(debug=True)
