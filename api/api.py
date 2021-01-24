@@ -36,8 +36,11 @@ def sign_up():
 def user_exists():
     user_id = request.args.get('userID')
     cur = mysql.connection.cursor()
-    cur.execute("SELECT userID from Users where userID = %s", [user_id])
+    cur.execute("SELECT role from Users where userID = %s", [user_id])
     exists = not cur.rowcount == 0
+    if exists:
+        row = cur.fetchall()
+        return jsonify(exists=exists, role=row[0][0]), 200
     cur.close()
     return jsonify(exists=exists), 200
     
