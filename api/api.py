@@ -42,7 +42,7 @@ def user_exists():
         row = cur.fetchall()
         return jsonify(exists=exists, role=row[0][0]), 200
     cur.close()
-    return jsonify(exists=exists), 200
+    return jsonify(exists=exists, role=""), 200
     
 if __name__ == '__main__':
     app.run(debug=True)
