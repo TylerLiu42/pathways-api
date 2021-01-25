@@ -27,9 +27,17 @@ def sign_up():
         cur = mysql.connection.cursor()
         cur.execute("INSERT INTO Users VALUES (%s, %s, %s)", (user_id, name, role))
         mysql.connection.commit()
-        cur.close()
     except:
+        cur.close()
         return jsonify(created=False, message="User already exists."), 400
+    if role == 'employer':
+        company = user.get('company')
+        if company is None:
+            cur.close()
+            return jsonify(created=False, message="No company specified"), 400
+        cur.execute("INSERT INTO Employer VALUES (%s, %s)", (user_id, company))
+        mysql.connection.commit()
+    cur.close()
     return jsonify(created=True), 200
 
 @app.route('/api/user_exists', methods=['GET'])
@@ -44,21 +52,6 @@ def user_exists():
         return jsonify(exists=exists, role=row[0][0]), 200
     cur.close()
     return jsonify(exists=exists, role=""), 200
-
-@app.route('/api/set_company', methods=['POST'])
-def set_company():
-    user = request.get_json() 
-    user_id = user.get('userID')
-    company = user.get('company')
-    cur = mysql.connection.cursor()
-    try:
-        cur.execute("INSERT INTO Employer VALUES (%s, %s)", (user_id, company))
-        mysql.connection.commit()
-    except:
-        cur.close()
-        return jsonify(message="Failed to insert company"), 409
-    cur.close()
-    return jsonify(message="Company set successfully"), 200
 
 if __name__ == '__main__':
     app.run(debug=True)
