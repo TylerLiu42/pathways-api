@@ -3,14 +3,14 @@ CREATE TABLE Users (
 	name varchar(50),
 	role ENUM('applicant', 'employer', 'mentor'),
 	PRIMARY KEY (userID)
-)
+);
 
 CREATE TABLE Employer (
 	userID varchar(50) not null,
 	company varchar(100),
 	PRIMARY KEY (userID),
 	FOREIGN KEY (userID) references Users(userID)
-)
+);
 
 CREATE TABLE ForumPost (
 	postID varchar(100) not null,
@@ -22,7 +22,7 @@ CREATE TABLE ForumPost (
 	content varchar(10000),
 	PRIMARY KEY (postID),
 	FOREIGN KEY (author) references Users(userID)
-)
+);
 
 CREATE TABLE ForumReply (
 	replyID varchar(100) not null,
@@ -34,7 +34,7 @@ CREATE TABLE ForumReply (
 	PRIMARY KEY (replyID),
 	FOREIGN KEY (postID) references ForumPost(postID),
 	FOREIGN KEY (author) references Users(userID)
-)
+);
 
 CREATE TABLE PostRating (
 	postID varchar(100) not null,
@@ -43,7 +43,7 @@ CREATE TABLE PostRating (
 	PRIMARY KEY (postID, userID),
 	FOREIGN KEY (postID) references ForumPost(postID),
 	FOREIGN KEY (userID) references Users(userID)
-)
+);
 
 CREATE TABLE ReplyRating (
 	replyID varchar(100) not null,
@@ -52,4 +52,4 @@ CREATE TABLE ReplyRating (
 	PRIMARY KEY (replyID, userID),
 	FOREIGN KEY (replyID) references ForumReply(replyID),
 	FOREIGN KEY (userID) references Users(userID)
-)
+);

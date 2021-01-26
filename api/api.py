@@ -62,11 +62,11 @@ def create_forum_post():
 def create_forum_reply():
     return forum.create_forum_reply(mysql)
 
-@app.route('/api/get_posts', methods=['GET'])
+@app.route('/api/posts', methods=['GET'])
 def get_posts():
     return forum.get_posts(mysql)
 
-@app.route('/api/get_replies', methods=['GET'])
+@app.route('/api/replies', methods=['GET'])
 def get_replies():
     return forum.get_replies(mysql)
 
