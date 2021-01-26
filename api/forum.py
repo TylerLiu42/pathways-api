@@ -45,7 +45,7 @@ def get_posts(mysql):
             userVoted = ''
         else:
             userVoted = cur.fetchall()[0][0]
-        post = {'authorName': row[0], 'rating': {'score': row[1], "userVoted": userVoted}, 'title': row[2], 'date_created': row[3]}
+        post = {'authorName': row[0], 'rating': {'score': row[1], "userVoted": userVoted}, 'title': row[2], 'date_created': row[3], 'postID': row[4]}
         response.append(post)
     cur.execute("SELECT COUNT(PostID) from ForumPost where topic = %s", [topic])
     totalRows = cur.fetchall()[0][0]
@@ -83,7 +83,6 @@ def vote_post():
     if rating.lower() != 'up' and rating.lower != 'down':
         return jsonify(message="Invalid rating"), 400
     cur = mysql.connection.cursor()
-    
     if rating.lower() == 'up':
         cur.execute("UPDATE Posts SET score = score + 1 WHERE postID = %s", [postID])
     else:
