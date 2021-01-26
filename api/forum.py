@@ -33,16 +33,23 @@ def get_posts(mysql):
     limit = request.args.get('limit') 
     topic = request.args.get('topic')
     cur = mysql.connection.cursor()
-    cur.execute("""SELECT Users.name, score, title, date_created, content from 
+    cur.execute("""SELECT Users.name, score, title, date_created from 
         ForumPost JOIN Users ON ForumPost.author = Users.userID where topic = %s 
         order by date_created desc limit %s, %s""", (topic, int(index), int(limit)))
     rows = cur.fetchall()
     response = []
     for row in rows:
-        post = {'authorName': row[0], 'score': row[1], 'title': row[2], 'date_created': row[3], 'content': row[4]}
+        post = {'authorName': row[0], 'score': row[1], 'title': row[2], 'date_created': row[3]}
         response.append(post)
     cur.close()
     return jsonify(response), 200
+
+def get_single_post(mysql):
+    postID = request.args.get('id')
+    cur = mysql.connection.cursor()
+    cur.execute("SELECT content from ForumPost where postID = %s", [postID])
+    row = cur.fetchall()
+    return jsonify(content = row[0][0]), 200
 
 def get_replies(mysql):
     postID = request.args.get('postID')
@@ -56,3 +63,4 @@ def get_replies(mysql):
         response.append(reply)
     cur.close()
     return jsonify(response), 200
+        

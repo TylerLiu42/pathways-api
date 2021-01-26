@@ -66,6 +66,10 @@ def create_forum_reply():
 def get_posts():
     return forum.get_posts(mysql)
 
+@app.route('/api/single_post', methods=['GET'])
+def get_single_post():
+    return forum.get_single_post(mysql)
+
 @app.route('/api/replies', methods=['GET'])
 def get_replies():
     return forum.get_replies(mysql)
