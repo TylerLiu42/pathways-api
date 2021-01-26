@@ -32,14 +32,20 @@ def get_posts(mysql):
     index = request.args.get('index')
     limit = request.args.get('limit') 
     topic = request.args.get('topic')
+    userID = request.args.get('userID')
     cur = mysql.connection.cursor()
-    cur.execute("""SELECT Users.name, score, title, date_created from 
+    cur.execute("""SELECT Users.name, score, title, date_created, postID from 
         ForumPost JOIN Users ON ForumPost.author = Users.userID where topic = %s 
         order by date_created desc limit %s, %s""", (topic, int(index), int(limit)))
     rows = cur.fetchall()
     response = []
     for row in rows:
-        post = {'authorName': row[0], 'score': row[1], 'title': row[2], 'date_created': row[3]}
+        cur.execute("SELECT rating from PostRating where userID = %s and postID = %s", (userID, row[4]))
+        if cur.rowcount == 0:
+            userVoted = ''
+        else:
+            userVoted = cur.fetchall()[0][0]
+        post = {'authorName': row[0], 'rating': {'score': row[1], "userVoted": userVoted}, 'title': row[2], 'date_created': row[3]}
         response.append(post)
     cur.close()
     return jsonify(response), 200
@@ -65,4 +71,18 @@ def get_replies(mysql):
         response.append(reply)
     cur.close()
     return jsonify(response), 200
-        
+
+def upvote_post():
+    #WIP
+    payload = request.get_json()
+    userID = payload.get('userID')
+    postID = payload.get('postID')
+    rating = payload.get('rating')
+    if rating.lower() != 'up' and rating.lower != 'down':
+        return jsonify(message="Invalid rating"), 400
+    cur = mysql.connection.cursor()
+    if rating.lower() == 'up':
+        cur.execute("UPDATE Posts SET score = score + 1 WHERE postID = %s", [postID])
+    else:
+        cur.execute("UPDATE Posts SET score = score - 1 WHERE postID = %s", [postID])
+    
