@@ -1,3 +1,4 @@
 api/pw.txt
 .project
 .pydevproject
+__pycache__/
