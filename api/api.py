@@ -74,5 +74,9 @@ def get_single_post():
 def get_replies():
     return forum.get_replies(mysql)
 
+@app.route('/api/vote_post', methods=['POST'])
+def vote_post():
+    return forum.vote_post(mysql)
+
 if __name__ == '__main__':
     app.run(debug=True)

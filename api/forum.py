@@ -74,17 +74,27 @@ def get_replies(mysql):
     cur.close()
     return jsonify(response), 200
 
-def vote_post():
-    #WIP
+def vote_post(mysql):
     payload = request.get_json()
     userID = payload.get('userID')
     postID = payload.get('postID')
     rating = payload.get('rating')
-    if rating.lower() != 'up' and rating.lower != 'down':
+    if rating.lower() != 'up' and rating.lower() != 'down':
         return jsonify(message="Invalid rating"), 400
     cur = mysql.connection.cursor()
-    if rating.lower() == 'up':
-        cur.execute("UPDATE Posts SET score = score + 1 WHERE postID = %s", [postID])
+    cur.execute("SELECT postID, userID, rating from PostRating where userID = %s AND postID = %s", (userID, postID))
+    rows = cur.fetchall()
+    if len(rows) == 0:
+        cur.execute("INSERT INTO PostRating VALUES (%s, %s, %s)", (postID, userID, rating.lower()))
+        mysql.connection.commit()
     else:
-        cur.execute("UPDATE Posts SET score = score - 1 WHERE postID = %s", [postID])
+        cur.execute("DELETE FROM PostRating WHERE postID = %s AND userID = %s", (postID, userID))
+        mysql.connection.commit()
+    if rating.lower() == 'up':
+        cur.execute("UPDATE ForumPost SET score = score + 1 WHERE postID = %s", [postID])
+        mysql.connection.commit()
+    else:
+        cur.execute("UPDATE ForumPost SET score = score - 1 WHERE postID = %s", [postID])
+        mysql.connection.commit()
+    return jsonify(message="Score updated successfully"), 200
     
