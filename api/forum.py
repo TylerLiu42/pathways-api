@@ -14,7 +14,7 @@ def create_forum_post(mysql):
     cur.execute("INSERT INTO ForumPost VALUES (%s, %s, 0, %s, %s, NOW(), %s)", (postID, topic, author, title, content))
     mysql.connection.commit()
     cur.close()
-    return jsonify(message="Post created"), 200
+    return jsonify(message="Post created", post_url="/forum/%s/%s" %(topic, postID)), 200
 
 def create_forum_reply(mysql):
     replyID = uuid4()
@@ -47,9 +47,11 @@ def get_posts(mysql):
 def get_single_post(mysql):
     postID = request.args.get('id')
     cur = mysql.connection.cursor()
-    cur.execute("SELECT content from ForumPost where postID = %s", [postID])
+    cur.execute("SELECT title, score, author, content, date_created from ForumPost where postID = %s", [postID])
     row = cur.fetchall()
-    return jsonify(content = row[0][0]), 200
+    if (len(row) == 1):
+        return jsonify(title=row[0][0], score=row[0][1], author=row[0][2], content=row[0][3], date_created=row[0][4]), 200
+    return jsonify(message="Could not find post."), 400
 
 def get_replies(mysql):
     postID = request.args.get('postID')

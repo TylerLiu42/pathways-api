@@ -14,7 +14,7 @@ CREATE TABLE Employer (
 
 CREATE TABLE ForumPost (
 	postID varchar(100) not null,
-	topic ENUM('HTML', 'CSS', 'Java', 'Machine Learning', 'API', 'Artificial Intelligence', 'Python'),
+	topic ENUM('html', 'css', 'java', 'ml', 'api', 'ai', 'python'),
 	score int,
 	author varchar(50),
 	title varchar(1000),
