@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_mysqldb import MySQL
 from flask_cors import CORS
+import forum
 import sys
 app = Flask(__name__)
 cors = CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
@@ -52,6 +53,22 @@ def user_exists():
         return jsonify(exists=exists, role=row[0][0]), 200
     cur.close()
     return jsonify(exists=exists, role=""), 200
+
+@app.route('/api/forum_post', methods=['POST'])
+def create_forum_post():
+    return forum.create_forum_post(mysql)
+
+@app.route('/api/forum_reply', methods=['POST'])
+def create_forum_reply():
+    return forum.create_forum_reply(mysql)
+
+@app.route('/api/get_posts', methods=['GET'])
+def get_posts():
+    return forum.get_posts(mysql)
+
+@app.route('/api/get_replies', methods=['GET'])
+def get_replies():
+    return forum.get_replies(mysql)
 
 if __name__ == '__main__':
     app.run(debug=True)
