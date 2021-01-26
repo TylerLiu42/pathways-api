@@ -74,27 +74,38 @@ def get_replies(mysql):
     cur.close()
     return jsonify(response), 200
 
-def vote_post(mysql):
+def vote(mysql):
     payload = request.get_json()
     userID = payload.get('userID')
-    postID = payload.get('postID')
+    id = payload.get('id')
     rating = payload.get('rating')
+    type = payload.get('type')
     if rating.lower() != 'up' and rating.lower() != 'down':
         return jsonify(message="Invalid rating"), 400
+    if type.lower() != 'reply' and type.lower() != 'post':
+        return jsonify(message="Invalid type"), 400
+    if type.lower() == 'post':
+        id_column = 'postID'
+        rating_table = 'PostRating'
+        forum_table = 'ForumPost'
+    else:
+        id_column = 'replyID'
+        rating_table = 'ReplyRating'
+        forum_table = 'ForumReply'
     cur = mysql.connection.cursor()
-    cur.execute("SELECT postID, userID, rating from PostRating where userID = %s AND postID = %s", (userID, postID))
+    cur.execute(f"SELECT {id_column}, userID, rating from {rating_table} where userID = %s AND {id_column} = %s", (userID, id))
     rows = cur.fetchall()
     if len(rows) == 0:
-        cur.execute("INSERT INTO PostRating VALUES (%s, %s, %s)", (postID, userID, rating.lower()))
+        cur.execute(f"INSERT INTO {rating_table} VALUES (%s, %s, %s)", (id, userID, rating.lower()))
         mysql.connection.commit()
     else:
-        cur.execute("DELETE FROM PostRating WHERE postID = %s AND userID = %s", (postID, userID))
+        cur.execute(f"DELETE FROM {rating_table} WHERE {id_column} = %s AND userID = %s", (id, userID))
         mysql.connection.commit()
     if rating.lower() == 'up':
-        cur.execute("UPDATE ForumPost SET score = score + 1 WHERE postID = %s", [postID])
+        cur.execute(f"UPDATE {forum_table} SET score = score + 1 WHERE {id_column} = %s", [id])
         mysql.connection.commit()
     else:
-        cur.execute("UPDATE ForumPost SET score = score - 1 WHERE postID = %s", [postID])
+        cur.execute(f"UPDATE {forum_table} SET score = score - 1 WHERE {id_column} = %s", [id])
         mysql.connection.commit()
     return jsonify(message="Score updated successfully"), 200
     
