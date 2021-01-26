@@ -47,8 +47,10 @@ def get_posts(mysql):
             userVoted = cur.fetchall()[0][0]
         post = {'authorName': row[0], 'rating': {'score': row[1], "userVoted": userVoted}, 'title': row[2], 'date_created': row[3]}
         response.append(post)
+    cur.execute("SELECT COUNT(PostID) from ForumPost")
+    totalRows = cur.fetchall()[0][0]
     cur.close()
-    return jsonify(response), 200
+    return jsonify(posts=response, totalPosts=totalRows), 200
 
 def get_single_post(mysql):
     postID = request.args.get('id')
