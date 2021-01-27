@@ -78,10 +78,10 @@ def vote(mysql):
     payload = request.get_json()
     userID = payload.get('userID')
     id = payload.get('id')
-    rating = payload.get('rating')
+    dir = payload.get('dir')
     type = payload.get('type')
-    if rating.lower() != 'up' and rating.lower() != 'down':
-        return jsonify(message="Invalid rating"), 400
+    if dir not in [-1, 0, 1]:
+        return jsonify(message="Invalid dir"), 400
     if type.lower() != 'reply' and type.lower() != 'post':
         return jsonify(message="Invalid type"), 400
     if type.lower() == 'post':
@@ -95,17 +95,29 @@ def vote(mysql):
     cur = mysql.connection.cursor()
     cur.execute(f"SELECT {id_column}, userID, rating from {rating_table} where userID = %s AND {id_column} = %s", (userID, id))
     rows = cur.fetchall()
-    if len(rows) == 0:
-        cur.execute(f"INSERT INTO {rating_table} VALUES (%s, %s, %s)", (id, userID, rating.lower()))
+    if len(rows) == 0 and dir == 1:
+        cur.execute(f"UPDATE {forum_table} SET score = score + 1 WHERE {id_column} = %s", [id])
+        cur.execute(f"INSERT INTO {rating_table} VALUES (%s, %s, 'up')", (id, userID))
         mysql.connection.commit()
-    else:
+    elif len(rows) == 0 and dir == -1:
+        cur.execute(f"UPDATE {forum_table} SET score = score - 1 WHERE {id_column} = %s", [id])
+        cur.execute(f"INSERT INTO {rating_table} VALUES (%s, %s, 'down')", (id, userID))
+        mysql.connection.commit()
+    elif dir == 0 and rows[0][2] == 'up':
         cur.execute(f"DELETE FROM {rating_table} WHERE {id_column} = %s AND userID = %s", (id, userID))
+        cur.execute(f"UPDATE {forum_table} SET score = score - 1 WHERE {id_column} = %s", [id])
         mysql.connection.commit()
-    if rating.lower() == 'up':
+    elif dir == 0 and rows[0][2] == 'down':
+        cur.execute(f"DELETE FROM {rating_table} WHERE {id_column} = %s AND userID = %s", (id, userID))
         cur.execute(f"UPDATE {forum_table} SET score = score + 1 WHERE {id_column} = %s", [id])
         mysql.connection.commit()
+    elif dir == 1:
+        cur.execute(f"UPDATE {forum_table} SET score = score + 2 WHERE {id_column} = %s", [id])
+        cur.execute(f"UPDATE {rating_table} SET rating = 'up' WHERE {id_column} = %s", [id])
+        mysql.connection.commit()
     else:
-        cur.execute(f"UPDATE {forum_table} SET score = score - 1 WHERE {id_column} = %s", [id])
+        cur.execute(f"UPDATE {forum_table} SET score = score - 2 WHERE {id_column} = %s", [id])
+        cur.execute(f"UPDATE {rating_table} SET rating = 'down' WHERE {id_column} = %s", [id])
         mysql.connection.commit()
     return jsonify(message="Score updated successfully"), 200
     
