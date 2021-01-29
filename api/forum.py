@@ -64,12 +64,17 @@ def get_single_post(mysql):
 def get_replies(mysql):
     postID = request.args.get('postID')
     cur = mysql.connection.cursor()
-    cur.execute("""SELECT Users.name, score, date_created, content from 
+    cur.execute("""SELECT Users.name, score, date_created, content, Users.userID, ForumReply.replyID from 
         ForumReply JOIN Users ON ForumReply.author = Users.userID where postID = %s order by date_created desc""", [postID])
     rows = cur.fetchall()
     response = []
     for row in rows:
-        reply = {'authorName': row[0], 'score': row[1], 'date_created': row[2], 'content': row[3]}
+        cur.execute("SELECT rating from ReplyRating where userID = %s and replyID = %s", (row[4], row[5]))
+        if cur.rowcount == 0:
+            userVoted = ''
+        else:
+            userVoted = cur.fetchall()[0][0]
+        reply = {'authorName': row[0], 'rating': {'score': row[1], "userVoted": userVoted}, 'date_created': row[2], 'content': row[3]}
         response.append(reply)
     cur.close()
     return jsonify(response), 200
