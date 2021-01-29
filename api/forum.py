@@ -26,7 +26,17 @@ def create_forum_reply(mysql):
     cur.execute("INSERT INTO ForumReply VALUES (%s, %s, %s, 0, UTC_TIMESTAMP(), %s)", (replyID, postID, author, content))
     mysql.connection.commit()
     cur.close()
-    return jsonify(message="Reply created"), 200
+    reply = {
+        'replyID': replyID,
+        # authorName: TODO
+        'content': content,
+        # date_created: TODO
+        'rating': {
+            'score': 0,
+            'userVoted': ""
+        }
+    }
+    return jsonify(message="Reply created", reply=reply), 200
 
 def get_posts(mysql):
     index = request.args.get('index')
@@ -63,18 +73,19 @@ def get_single_post(mysql):
 
 def get_replies(mysql):
     postID = request.args.get('postID')
+    userID = request.args.get('userID')
     cur = mysql.connection.cursor()
-    cur.execute("""SELECT Users.name, score, date_created, content, Users.userID, ForumReply.replyID from 
+    cur.execute("""SELECT Users.name, score, date_created, content, ForumReply.replyID from 
         ForumReply JOIN Users ON ForumReply.author = Users.userID where postID = %s order by date_created desc""", [postID])
     rows = cur.fetchall()
     response = []
     for row in rows:
-        cur.execute("SELECT rating from ReplyRating where userID = %s and replyID = %s", (row[4], row[5]))
+        cur.execute("SELECT rating from ReplyRating where userID = %s and replyID = %s", (userID, row[4]))
         if cur.rowcount == 0:
             userVoted = ''
         else:
             userVoted = cur.fetchall()[0][0]
-        reply = {'authorName': row[0], 'rating': {'score': row[1], "userVoted": userVoted}, 'date_created': row[2], 'content': row[3]}
+        reply = {'authorName': row[0], 'rating': {'score': row[1], "userVoted": userVoted}, 'date_created': row[2], 'content': row[3], 'replyID': row[4]}
         response.append(reply)
     cur.close()
     return jsonify(response), 200
