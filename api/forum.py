@@ -11,7 +11,7 @@ def create_forum_post(mysql):
     title = post.get('title')
     content = escape(post.get('content'))
     cur = mysql.connection.cursor()
-    cur.execute("INSERT INTO ForumPost VALUES (%s, %s, 0, %s, %s, NOW(), %s)", (postID, topic, author, title, content))
+    cur.execute("INSERT INTO ForumPost VALUES (%s, %s, 0, %s, %s, UTC_TIMESTAMP(), %s)", (postID, topic, author, title, content))
     mysql.connection.commit()
     cur.close()
     return jsonify(message="Post created", post_url="/forum/%s/%s" %(topic, postID)), 200
@@ -23,7 +23,7 @@ def create_forum_reply(mysql):
     author = reply.get('author')
     content = escape(reply.get('content'))
     cur = mysql.connection.cursor()
-    cur.execute("INSERT INTO ForumReply VALUES (%s, %s, %s, 0, NOW(), %s)", (replyID, postID, author, content))
+    cur.execute("INSERT INTO ForumReply VALUES (%s, %s, %s, 0, UTC_TIMESTAMP(), %s)", (replyID, postID, author, content))
     mysql.connection.commit()
     cur.close()
     return jsonify(message="Reply created"), 200
