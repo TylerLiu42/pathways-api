@@ -1,5 +1,6 @@
 import uuid
 import sys
+import datetime
 from uuid import uuid4
 from flask import request, jsonify, escape
 
@@ -23,14 +24,17 @@ def create_forum_reply(mysql):
     author = reply.get('author')
     content = escape(reply.get('content'))
     cur = mysql.connection.cursor()
-    cur.execute("INSERT INTO ForumReply VALUES (%s, %s, %s, 0, UTC_TIMESTAMP(), %s)", (replyID, postID, author, content))
+    utc_timestamp = datetime.datetime.utcnow()
+    cur.execute("INSERT INTO ForumReply VALUES (%s, %s, %s, 0, %s, %s)", (replyID, postID, author, utc_timestamp.strftime('%Y-%m-%d %H:%M:%S'), content))
     mysql.connection.commit()
+    cur.execute("SELECT name from Users WHERE userID = %s", [author])
+    authorName = cur.fetchone()[0]
     cur.close()
     reply = {
         'replyID': replyID,
-        # authorName: TODO
+        'authorName': authorName,
         'content': content,
-        # date_created: TODO
+        'date_created': utc_timestamp,
         'rating': {
             'score': 0,
             'userVoted': ""
