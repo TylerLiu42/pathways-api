@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from flask_mysqldb import MySQL
 from flask_cors import CORS
 import forum
+import resource_scraper
 import sys
 app = Flask(__name__)
 cors = CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
@@ -77,6 +78,10 @@ def get_replies():
 @app.route('/api/vote', methods=['POST'])
 def vote():
     return forum.vote(mysql)
+
+@app.route('/api/resources', methods=['POST'])
+def resources():
+    return resource_scraper.get_resources()
 
 if __name__ == '__main__':
     app.run(debug=True)
