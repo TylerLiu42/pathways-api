@@ -30,15 +30,18 @@ def view_my_job_posts(mysql):
     except Exception as e:
         return jsonify(message=repr(e)), 400
 
-#TODO: pagination, see get_posts from forum
 def get_job_posts(mysql):
+    index = request.args.get('index')
+    limit = request.args.get('limit') 
     try:
         cur = mysql.connection.cursor()
-        cur.execute("SELECT * from JobPost")
+        cur.execute("SELECT * from JobPost LIMIT %s OFFSET %s", (int(limit), int(index)))
         rows = cur.fetchall()
-        cur.close()
         jobs = to_jobs_json(rows)
-        return jsonify(jobs = jobs), 200
+        cur.execute("SELECT * from JobPost")
+        total_jobs = cur.rowcount
+        cur.close()
+        return jsonify(jobs = jobs, total_jobs = total_jobs), 200
     except Exception as e:
         return jsonify(message=repr(e)), 400
 
@@ -72,7 +75,7 @@ def delete_job_post(mysql):
         deleted_row_count = cur.rowcount
         cur.close()
         if (deleted_row_count == 1):
-            return jsonify(message="Job {} deleted".format(jobID)), 200
+            return jsonify(message=f"Job {jobID} deleted"), 200
         else:
             return jsonify(message="Could not find job post."), 400 
     except Exception as e:
@@ -90,7 +93,7 @@ def apply_job_post(mysql):
         cur.execute("INSERT INTO AppliedJob VALUES (%s, %s, UTC_TIMESTAMP())", (jobID, userID))
         mysql.connection.commit()
         cur.close()
-        return jsonify(message="userID {} applied to jobID {} successfully".format(userID, jobID)), 200
+        return jsonify(message=f"userID {userID} applied to jobID {jobID} successfully"), 200
     except Exception as e:
         return jsonify(message=repr(e)), 400
 
