@@ -30,15 +30,18 @@ def view_my_job_posts(mysql):
     except Exception as e:
         return jsonify(message=repr(e)), 400
 
-#TODO: pagination, see get_posts from forum
 def get_job_posts(mysql):
+    index = request.args.get('index')
+    limit = request.args.get('limit') 
     try:
         cur = mysql.connection.cursor()
-        cur.execute("SELECT * from JobPost")
+        cur.execute("SELECT * from JobPost LIMIT %s OFFSET %s", (int(limit), int(index)))
         rows = cur.fetchall()
-        cur.close()
         jobs = to_jobs_json(rows)
-        return jsonify(jobs = jobs), 200
+        cur.execute("SELECT * from JobPost")
+        total_jobs = cur.rowcount
+        cur.close()
+        return jsonify(jobs = jobs, total_jobs = total_jobs), 200
     except Exception as e:
         return jsonify(message=repr(e)), 400
 
