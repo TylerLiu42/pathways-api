@@ -55,7 +55,7 @@ CREATE TABLE ReplyRating (
 );
 
 CREATE TABLE JobPost (
-	jobID varchar(100) not null,
+    jobID varchar(100) not null,
     userID varchar(100) not null,
     title varchar(1000),
     description varchar(1000),
@@ -66,15 +66,15 @@ CREATE TABLE JobPost (
     external_link varchar(1000),
     expiry_date datetime,
     date_created datetime,
-	PRIMARY KEY (jobID),
+    PRIMARY KEY (jobID),
     FOREIGN KEY (userID) references Users(userID)
 );
 
 CREATE TABLE AppliedJob (
-	jobID varchar(100) not null,
+    jobID varchar(100) not null,
     userID varchar(100) not null,
     date_applied datetime,
-	PRIMARY KEY (jobID, userID),
+    PRIMARY KEY (jobID, userID),
     FOREIGN KEY (userID) references Users(userID),
     FOREIGN KEY (jobID) references JobPost(jobID)
 );
