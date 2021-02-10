@@ -53,3 +53,28 @@ CREATE TABLE ReplyRating (
 	FOREIGN KEY (replyID) references ForumReply(replyID),
 	FOREIGN KEY (userID) references Users(userID)
 );
+
+CREATE TABLE JobPost (
+    jobID varchar(100) not null,
+    userID varchar(100) not null,
+    title varchar(1000),
+    description varchar(1000),
+    content varchar(8000),
+    tags varchar(1000),
+    remote boolean,
+    address varchar(1000),
+    external_link varchar(1000),
+    expiry_date datetime,
+    date_created datetime,
+    PRIMARY KEY (jobID),
+    FOREIGN KEY (userID) references Users(userID)
+);
+
+CREATE TABLE AppliedJob (
+    jobID varchar(100) not null,
+    userID varchar(100) not null,
+    date_applied datetime,
+    PRIMARY KEY (jobID, userID),
+    FOREIGN KEY (userID) references Users(userID),
+    FOREIGN KEY (jobID) references JobPost(jobID)
+);
