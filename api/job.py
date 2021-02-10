@@ -72,7 +72,7 @@ def delete_job_post(mysql):
         deleted_row_count = cur.rowcount
         cur.close()
         if (deleted_row_count == 1):
-            return jsonify(message="Job {} deleted".format(jobID)), 200
+            return jsonify(message=f"Job {jobID} deleted"), 200
         else:
             return jsonify(message="Could not find job post."), 400 
     except Exception as e:
@@ -90,7 +90,7 @@ def apply_job_post(mysql):
         cur.execute("INSERT INTO AppliedJob VALUES (%s, %s, UTC_TIMESTAMP())", (jobID, userID))
         mysql.connection.commit()
         cur.close()
-        return jsonify(message="userID {} applied to jobID {} successfully".format(userID, jobID)), 200
+        return jsonify(message=f"userID {userID} applied to jobID {jobID} successfully"), 200
     except Exception as e:
         return jsonify(message=repr(e)), 400
 
