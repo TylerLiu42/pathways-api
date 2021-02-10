@@ -3,6 +3,7 @@ from flask_mysqldb import MySQL
 from flask_cors import CORS
 import forum
 import resource_scraper
+import job
 import sys
 app = Flask(__name__)
 cors = CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
@@ -82,6 +83,34 @@ def vote():
 @app.route('/api/resources', methods=['POST'])
 def resources():
     return resource_scraper.get_resources()
+
+@app.route('/api/get_single_job_post', methods=['GET'])
+def get_single_job_post():
+    return job.get_single_job_post(mysql)
+
+@app.route('/api/view_my_job_posts', methods=['GET'])
+def view_my_job_posts():
+    return job.view_my_job_posts(mysql)
+
+@app.route('/api/get_job_posts', methods=['GET'])
+def get_job_posts():
+    return job.get_job_posts(mysql)
+
+@app.route('/api/create_job_post', methods=['POST'])
+def create_job_post():
+    return job.create_job_post(mysql)
+
+@app.route('/api/delete_job_post', methods=['DELETE'])
+def delete_job_post():
+    return job.delete_job_post(mysql)
+
+@app.route('/api/apply_job_post', methods=['POST'])
+def apply_job_post():
+    return job.apply_job_post(mysql)
+
+@app.route('/api/view_applied_job_posts', methods=['GET'])
+def view_applied_job_posts():
+    return job.view_applied_job_posts(mysql)
 
 if __name__ == '__main__':
     app.run(debug=True)
