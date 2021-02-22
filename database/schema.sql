@@ -78,3 +78,16 @@ CREATE TABLE AppliedJob (
     FOREIGN KEY (userID) references Users(userID),
     FOREIGN KEY (jobID) references JobPost(jobID)
 );
+
+CREATE TABLE JobReview (
+	reviewID varchar(100) not null,
+	jobID varchar(100) not null,
+	userID varchar(100),
+	content varchar(10000),
+	date_created datetime,
+	sentiment_score float,
+	flagged boolean,
+	PRIMARY KEY (reviewID),
+	FOREIGN KEY (jobID) references JobPost(jobID),
+	FOREIGN KEY (userID) references Users(userID)
+);
