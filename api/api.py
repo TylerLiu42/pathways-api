@@ -117,5 +117,9 @@ def view_applied_job_posts():
 def add_job_review():
     return review.add_job_review(mysql)
 
+@app.route('/api/job_reviews', methods=['GET'])
+def get_job_reviews():
+    return review.get_job_reviews(mysql)
+
 if __name__ == '__main__':
     app.run(debug=True)

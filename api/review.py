@@ -37,6 +37,17 @@ def add_job_review(mysql):
     mysql.connection.commit()
     cur.close()
     return jsonify(message="Success", flagged=flagged), 200
+
+def get_job_reviews(mysql):
+    jobID = request.args.get('jobID')
+    cur = mysql.connection.cursor()
+    cur.execute("""SELECT name, content, date_created, flagged from JobReview JOIN Users USING (userID) 
+                WHERE jobID = %s ORDER BY date_created DESC""", (jobID))
+    rows = cur.fetchall()
+    jobReviews = []
+    for row in rows:
+        jobReviews.append({"author": row[0], "content": row[1], "date_created": row[2], "flagged": row[3]})
+    return jsonify(message="Success", jobReviews=jobReviews), 200
     
 def getAverageScore(scores):
     total = 0
