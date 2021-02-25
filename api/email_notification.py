@@ -22,7 +22,12 @@ def sent_email(receiver_email, subject, body):
         server.login(sender_email, password)
         server.sendmail(sender_email, receiver_email, message.as_string())
 
-def sent_applied_job_email(recruiter_email, job_title, job_link, applicant_name):
+def sent_recruiter_applied_job_email(recruiter_email, job_title, job_link, applicant_name):
     subject = f"New job applicant for {job_title}"
     body = f"{applicant_name} applied for {job_title}, Link: {job_link}"
     sent_email(recruiter_email, subject, body)
+
+def sent_applicant_applied_job_email(applicant_email, job_title, job_link, applicant_name):
+    subject = f"Applied to {job_title} successfully"
+    body = f"{applicant_name} applied for {job_title} successfully, Link: {job_link}"
+    sent_email(applicant_email, subject, body)
