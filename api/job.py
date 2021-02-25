@@ -2,7 +2,7 @@ import uuid
 import sys
 from uuid import uuid4
 from flask import request, jsonify
-from email_notifcation import sent_applied_job_email
+from email_notification import sent_applied_job_email
 
 def get_single_job_post(mysql):
     jobID = request.args.get('jobID')
