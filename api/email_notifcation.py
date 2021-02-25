@@ -3,10 +3,10 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 
-def sent_email (receiver_email, subject, body):
+def sent_email(receiver_email, subject, body):
     port = 465  # SSL
     smtp_server = "smtp.gmail.com"
-    sender_email = "pathways.fydp@gmail.com"  
+    sender_email = "pathways.fydp@gmail.com" 
     #  Do not commit password
     #  password = ""
 
@@ -22,9 +22,7 @@ def sent_email (receiver_email, subject, body):
         server.login(sender_email, password)
         server.sendmail(sender_email, receiver_email, message.as_string())
 
-def sent_applied_job_email(recruiter_email, job_title, job_link, applicant_first_name, applicant_last_name):
+def sent_applied_job_email(recruiter_email, job_title, job_link, applicant_name):
     subject = f"New job applicant for {job_title}"
-    body = f"{applicant_first_name} {applicant_last_name} applied for {job_title}, Link: {job_link}"
+    body = f"{applicant_name} applied for {job_title}, Link: {job_link}"
     sent_email(recruiter_email, subject, body)
-
-
