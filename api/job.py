@@ -2,6 +2,7 @@ import uuid
 import sys
 from uuid import uuid4
 from flask import request, jsonify
+from email_notifcation import sent_applied_job_email
 
 def get_single_job_post(mysql):
     jobID = request.args.get('jobID')
@@ -93,6 +94,7 @@ def apply_job_post(mysql):
         cur.execute("INSERT INTO AppliedJob VALUES (%s, %s, UTC_TIMESTAMP())", (jobID, userID))
         mysql.connection.commit()
         cur.close()
+        notify_recruiter(mysql, userID, jobID)
         return jsonify(message=f"userID {userID} applied to jobID {jobID} successfully"), 200
     except Exception as e:
         return jsonify(message=repr(e)), 400
@@ -115,6 +117,20 @@ def view_applied_job_posts(mysql):
             return jsonify(applied = row_count, applied_jobs = applied_jobs), 200
     except Exception as e:
         return jsonify(message=repr(e)), 400
+
+def notify_recruiter(mysql, applicant_userID, jobID): 
+    cur = mysql.connection.cursor()
+    cur.execute("SELECT name FROM Users WHERE userID = %s", [applicant_userID])
+    applicant_name = cur.fetchone()[0]
+    cur.execute("SELECT userID, title FROM JobPost WHERE jobID = %s", [jobID])
+    row = cur.fetchone()
+    recruiter_userID = row[0]
+    job_title = row[1]
+    #TODO: include the actual endpoint
+    job_link = f"http://localhost:5000/job/{jobID}"
+    recruiter_email = f"{recruiter_userID}@gmail.com"
+    cur.close()
+    sent_applied_job_email(recruiter_email, job_title, job_link, applicant_name)
 
 def to_jobs_json(jobs):
     return list(map(lambda job: to_job_json(job), jobs))
