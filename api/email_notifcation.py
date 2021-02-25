@@ -7,8 +7,8 @@ def sent_email(receiver_email, subject, body):
     port = 465  # SSL
     smtp_server = "smtp.gmail.com"
     sender_email = "pathways.fydp@gmail.com" 
-    #  Do not commit password
-    #  password = ""
+    f = open("email_pw.txt", "r")
+    password = f.read().replace('\n','')
 
     message = MIMEMultipart()
     message['From'] = sender_email
