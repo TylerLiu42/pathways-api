@@ -6,12 +6,12 @@ from textwrap import dedent
 
 #TODO: include the actual endpoint
 JOB_PATH = "http://localhost:5000/job/"
-EMAIL_DOMAIN = "@gmail.com"
+EMAIL_HOST = "gmail.com"
 
 def sent_email(receiver_email, subject, body):
     port = 465  # SSL
-    smtp_server = "smtp.gmail.com"
-    sender_email = f"pathways.fydp{EMAIL_DOMAIN}" 
+    smtp_server = f"smtp.{EMAIL_HOST}"
+    sender_email = f"pathways.fydp@{EMAIL_HOST}" 
     f = open("email_pw.txt", "r")
     password = f.read().replace('\n','')
 
@@ -33,7 +33,7 @@ def sent_recruiter_applied_job(mysql, applicant_userID, jobID):
     recruiter_userID, job_title = get_job_userID_and_title(cur, jobID)
     recruiter_name = get_user_name(cur, recruiter_userID)
     job_link = f"{JOB_PATH}{jobID}"
-    recruiter_email = f"{recruiter_userID}{EMAIL_DOMAIN}"
+    recruiter_email = f"{recruiter_userID}@{EMAIL_HOST}"
     cur.close()
 
     subject = f"New job applicant for {job_title}"
@@ -55,7 +55,7 @@ def sent_applicant_applied_job(mysql, applicant_userID, jobID):
     applicant_name = get_user_name(cur, applicant_userID)
     _, job_title = get_job_userID_and_title(cur, jobID)
     job_link = f"{JOB_PATH}{jobID}"
-    applicant_email = f"{applicant_userID}{EMAIL_DOMAIN}"
+    applicant_email = f"{applicant_userID}@{EMAIL_HOST}"
     cur.close()
 
     subject = f"Applied to {job_title} successfully"
@@ -77,7 +77,7 @@ def sent_interview_selected(mysql, applicant_userID, jobID, message, interview_l
     applicant_name = get_user_name(cur, applicant_userID)
     _, job_title = get_job_userID_and_title(cur, jobID)
     job_link = f"{JOB_PATH}{jobID}"
-    applicant_email = f"{applicant_userID}{EMAIL_DOMAIN}"
+    applicant_email = f"{applicant_userID}@{EMAIL_HOST}"
     cur.close()
 
     subject = f"Congratulations! You have been selected to {job_title} interview"
