@@ -74,6 +74,7 @@ CREATE TABLE AppliedJob (
     jobID varchar(100) not null,
     userID varchar(100) not null,
     date_applied datetime,
+    interview_selected boolean,
     PRIMARY KEY (jobID, userID),
     FOREIGN KEY (userID) references Users(userID),
     FOREIGN KEY (jobID) references JobPost(jobID)
