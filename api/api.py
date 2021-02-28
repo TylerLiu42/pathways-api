@@ -109,6 +109,14 @@ def delete_job_post():
 def apply_job_post():
     return job.apply_job_post(mysql)
 
+@app.route('/api/view_job_applicants', methods=['GET'])
+def view_job_applicants():
+    return job.view_job_applicants(mysql)
+
+@app.route('/api/select_applicant_for_interview', methods=['POST'])
+def select_applicant_for_interview():
+    return job.select_applicant_for_interview(mysql)
+
 @app.route('/api/view_applied_job_posts', methods=['GET'])
 def view_applied_job_posts():
     return job.view_applied_job_posts(mysql)

@@ -2,6 +2,7 @@ import uuid
 import sys
 from uuid import uuid4
 from flask import request, jsonify
+from email_notification import sent_recruiter_applied_job, sent_applicant_applied_job, sent_interview_selected
 
 def get_single_job_post(mysql):
     jobID = request.args.get('jobID')
@@ -11,7 +12,7 @@ def get_single_job_post(mysql):
         row = cur.fetchall()
         cur.close()
         if (len(row) == 1):
-            job = to_job_json(row)
+            job = to_job_json(row[0])
             return jsonify(job), 200
         else:
             return jsonify(message="Could not find job post."), 400
@@ -81,19 +82,53 @@ def delete_job_post(mysql):
     except Exception as e:
         return jsonify(message=repr(e)), 400
 
-#TODO update_job_post
-def update_job_post(mysql):
-    return None
-
 def apply_job_post(mysql):
     jobID = request.args.get('jobID')
     userID = request.args.get('userID')
     try:
         cur = mysql.connection.cursor()
-        cur.execute("INSERT INTO AppliedJob VALUES (%s, %s, UTC_TIMESTAMP())", (jobID, userID))
+        cur.execute("INSERT INTO AppliedJob VALUES (%s, %s, UTC_TIMESTAMP(), false)", (jobID, userID))
         mysql.connection.commit()
         cur.close()
+        sent_recruiter_applied_job(mysql, userID, jobID)
+        sent_applicant_applied_job(mysql, userID, jobID)
         return jsonify(message=f"userID {userID} applied to jobID {jobID} successfully"), 200
+    except Exception as e:
+        return jsonify(message=repr(e)), 400
+
+def select_applicant_for_interview(mysql):
+    req = request.get_json()
+    jobID = req.get('jobID')
+    userID = req.get('userID')
+    message = req.get('message')
+    interview_link = req.get('interview_link')
+    try:
+        cur = mysql.connection.cursor()
+        cur.execute("UPDATE AppliedJob SET interview_selected = true WHERE jobID = %s AND userID = %s", (jobID, userID))
+        mysql.connection.commit()
+        cur.close()
+        sent_interview_selected(mysql, userID, jobID, message, interview_link)
+        return jsonify(message=f"userID {userID} is selected for jobID {jobID} interview"), 200
+    except Exception as e:
+        return jsonify(message=repr(e)), 400
+
+def view_job_applicants(mysql): 
+    jobID = request.args.get('jobID')
+    try:
+        cur = mysql.connection.cursor()
+        cur.execute("SELECT userID, date_applied, interview_selected FROM AppliedJob where jobID = %s", [jobID])
+        rows = cur.fetchall()
+        row_count = cur.rowcount
+        cur.close()
+        if (row_count == 0):
+            return jsonify(applicants_count = row_count, applicants = []), 200
+        else:
+            applicants = list(map(lambda applicant: {
+                "userID": applicant[0],
+                "date_applied": applicant[1],
+                "interview_selected": bool(applicant[2])
+            }, rows))
+            return jsonify(applicants_count = row_count, applicants = applicants), 200
     except Exception as e:
         return jsonify(message=repr(e)), 400
 
@@ -101,7 +136,7 @@ def view_applied_job_posts(mysql):
     userID = request.args.get('userID')
     try:
         cur = mysql.connection.cursor()
-        cur.execute("SELECT jobID, date_applied FROM AppliedJob where userID = %s", [userID])
+        cur.execute("SELECT jobID, date_applied, interview_selected FROM AppliedJob where userID = %s", [userID])
         rows = cur.fetchall()
         row_count = cur.rowcount
         cur.close()
@@ -110,7 +145,8 @@ def view_applied_job_posts(mysql):
         else:
             applied_jobs = list(map(lambda applied_job: {
                 "jobID": applied_job[0],
-                "date_applied": applied_job[1]
+                "date_applied": applied_job[1],
+                "interview_selected": bool(applied_job[2])
             }, rows))
             return jsonify(applied = row_count, applied_jobs = applied_jobs), 200
     except Exception as e:
