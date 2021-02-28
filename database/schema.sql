@@ -87,6 +87,7 @@ CREATE TABLE JobReview (
 	date_created datetime,
 	sentiment_score float,
 	flagged boolean,
+	stars ENUM('1', '2', '3', '4', '5'),
 	PRIMARY KEY (reviewID),
 	FOREIGN KEY (jobID) references JobPost(jobID),
 	FOREIGN KEY (userID) references Users(userID)
