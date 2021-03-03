@@ -26,7 +26,7 @@ def view_my_job_posts(mysql):
     userID = request.args.get('userID')
     try:
         cur = mysql.connection.cursor()
-        cur.execute("SELECT * from JobPost where userID = %s", [userID])
+        cur.execute("SELECT jobID, title, remote, date_created, company from JobPost where userID = %s ORDER BY date_created DESC", [userID])
         rows = cur.fetchall()
         cur.close()
         jobs = to_jobs_json(rows)
@@ -39,10 +39,11 @@ def get_job_posts(mysql):
     limit = request.args.get('limit') 
     try:
         cur = mysql.connection.cursor()
-        cur.execute("SELECT * from JobPost LIMIT %s OFFSET %s", (int(limit), int(index)))
+        cur.execute("""SELECT jobID, title, remote, date_created, company from JobPost
+        WHERE expiry_date>CURRENT_TIMESTAMP ORDER BY date_created DESC LIMIT %s OFFSET %s""", (int(limit), int(index)))
         rows = cur.fetchall()
         jobs = to_jobs_json(rows)
-        cur.execute("SELECT * from JobPost")
+        cur.execute("SELECT * from JobPost WHERE expiry_date>CURRENT_TIMESTAMP")
         total_jobs = cur.rowcount
         cur.close()
         return jsonify(jobs = jobs, total_jobs = total_jobs), 200
@@ -63,7 +64,10 @@ def create_job_post(mysql):
     external_link = post.get('external_link')
     try:
         cur = mysql.connection.cursor()
-        cur.execute("INSERT INTO JobPost VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, UTC_TIMESTAMP())", (jobID, userID, title, description, content, tags, remote, address, external_link, expiry_date))
+        cur.execute("SELECT company FROM Employer WHERE userID = %s", [userID])
+        company = cur.fetchone()
+        cur.execute("INSERT INTO JobPost VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, UTC_TIMESTAMP(), %s)",
+        (jobID, userID, title, description, content, tags, remote, address, external_link, expiry_date, company))
         mysql.connection.commit()
         cur.close()
         return jsonify(message="Post created", post_url="/job/%s" %(jobID)), 200
@@ -190,7 +194,16 @@ def get_user_name(cur, userID):
     return cur.fetchone()[0]
 
 def to_jobs_json(jobs):
-    return list(map(lambda job: to_job_json(job), jobs))
+    return list(map(lambda job: to_minimum_job_json(job), jobs))
+
+def to_minimum_job_json(job):
+    return {
+        "jobID": job[0],
+        "title": job[1],
+        "remote": bool(job[2]),
+        "date_created": job[3],
+        "company": job[4]
+    }
 
 def to_job_json(job):
     return {
@@ -204,5 +217,6 @@ def to_job_json(job):
         "address": job[7],
         "external_link": job[8],
         "expiry_date": job[9],
-        "date_created": job[10]
+        "date_created": job[10],
+        "company": job[11]
     }

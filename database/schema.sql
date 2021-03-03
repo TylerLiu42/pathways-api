@@ -66,6 +66,7 @@ CREATE TABLE JobPost (
     external_link varchar(1000),
     expiry_date datetime,
     date_created datetime,
+    company varchar(100),
     PRIMARY KEY (jobID),
     FOREIGN KEY (userID) references Users(userID)
 );
@@ -90,6 +91,7 @@ CREATE TABLE JobReview (
 	date_created datetime,
 	sentiment_score float,
 	flagged boolean,
+	stars ENUM('1', '2', '3', '4', '5'),
 	PRIMARY KEY (reviewID),
 	FOREIGN KEY (jobID) references JobPost(jobID),
 	FOREIGN KEY (userID) references Users(userID)
