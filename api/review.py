@@ -12,6 +12,7 @@ def add_job_review(mysql):
     content = escape(review.get('content'))
     userID = review.get('userID')
     jobID = review.get('jobID')
+    stars = review.get('stars')
     reviewID = uuid4()
     sentiment_scores = requests.post(
         "https://api.deepai.org/api/sentiment-analysis",
@@ -22,10 +23,16 @@ def add_job_review(mysql):
     ).json()
     review_score = getAverageScore(sentiment_scores['output'])
     cur = mysql.connection.cursor()
+    if abs(review_score - (int(stars) - 3)) >= 2:
+        flagged = True
+        cur.execute("INSERT INTO JobReview VALUES (%s, %s, %s, %s, UTC_TIMESTAMP(), %s, true, %s)", (reviewID, jobID, userID, content, review_score, stars))
+        mysql.connection.commit()
+        cur.close()
+        return jsonify(message="Created, sentiment does not match rating", flagged=flagged), 200
     cur.execute("SELECT COUNT(*) from JobReview WHERE jobID = %s", (jobID))
     noOfReviews = cur.fetchone()[0]
     if noOfReviews < 3:
-        cur.execute("INSERT INTO JobReview VALUES (%s, %s, %s, %s, UTC_TIMESTAMP(), %s, false)", (reviewID, jobID, userID, content, review_score))
+        cur.execute("INSERT INTO JobReview VALUES (%s, %s, %s, %s, UTC_TIMESTAMP(), %s, false, %s)", (reviewID, jobID, userID, content, review_score, stars))
         mysql.connection.commit()
         cur.close()
         return jsonify(message="Success", flagged=False), 200
@@ -33,20 +40,24 @@ def add_job_review(mysql):
     current_average_score = cur.fetchone()[0]
     if abs(current_average_score - review_score) > 1.75:
         flagged = True
-    cur.execute("INSERT INTO JobReview VALUES (%s, %s, %s, %s, UTC_TIMESTAMP(), %s, %s)", (reviewID, jobID, userID, content, review_score, flagged))
+    cur.execute("INSERT INTO JobReview VALUES (%s, %s, %s, %s, UTC_TIMESTAMP(), %s, %s, %s)", (reviewID, jobID, userID, content, review_score, flagged, stars))
     mysql.connection.commit()
     cur.close()
-    return jsonify(message="Success", flagged=flagged), 200
+    if flagged:
+        message="Created, sentiment inconsistent with previous reviews"
+    else: 
+        message = "Success"
+    return jsonify(message=message, flagged=flagged), 200
 
 def get_job_reviews(mysql):
     jobID = request.args.get('jobID')
     cur = mysql.connection.cursor()
-    cur.execute("""SELECT name, content, date_created, flagged from JobReview JOIN Users USING (userID) 
+    cur.execute("""SELECT name, content, date_created, flagged, stars from JobReview JOIN Users USING (userID) 
                 WHERE jobID = %s ORDER BY date_created DESC""", (jobID))
     rows = cur.fetchall()
     jobReviews = []
     for row in rows:
-        jobReviews.append({"author": row[0], "content": row[1], "date_created": row[2], "flagged": row[3]})
+        jobReviews.append({"author": row[0], "content": row[1], "date_created": row[2], "flagged": row[3], "stars": row[4]})
     return jsonify(message="Success", jobReviews=jobReviews), 200
     
 def getAverageScore(scores):
