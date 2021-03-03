@@ -76,6 +76,8 @@ CREATE TABLE AppliedJob (
     userID varchar(100) not null,
     date_applied datetime,
     interview_selected boolean,
+    resume mediumblob,
+    resume_extension varchar(10),
     PRIMARY KEY (jobID, userID),
     FOREIGN KEY (userID) references Users(userID),
     FOREIGN KEY (jobID) references JobPost(jobID)

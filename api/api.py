@@ -121,6 +121,10 @@ def select_applicant_for_interview():
 def view_applied_job_posts():
     return job.view_applied_job_posts(mysql)
 
+@app.route('/api/applicant_resume', methods=['GET'])
+def get_applicant_resume():
+    return job.get_applicant_resume(mysql)
+
 @app.route('/api/add_job_review', methods=['POST'])
 def add_job_review():
     return review.add_job_review(mysql)
