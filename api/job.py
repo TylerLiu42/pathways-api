@@ -99,7 +99,7 @@ def apply_job_post(mysql):
         return jsonify(message=f"Resume file type not suppported. Supported types: {', '.join(ALLOWED_EXTENSIONS)}"), 400
     try:
         cur = mysql.connection.cursor()
-        cur.execute("INSERT INTO AppliedJob VALUES (%s, %s, UTC_TIMESTAMP(), false, %s, %s)", (jobID, userID, file, get_file_extension(file.filename)))
+        cur.execute("INSERT INTO AppliedJob VALUES (%s, %s, UTC_TIMESTAMP(), false, %s, %s)", (jobID, userID, file.read(), get_file_extension(file.filename)))
         mysql.connection.commit()
         cur.close()
         sent_recruiter_applied_job(mysql, userID, jobID)
@@ -113,14 +113,14 @@ def get_applicant_resume(mysql):
     userID = request.args.get('userID')
     try:
         cur = mysql.connection.cursor()
-        cur.execute("SELECT resume, resume_extension AppliedJob WHERE jobID=%s AND userID=%s", (jobID, userID))
+        cur.execute("SELECT resume, resume_extension FROM AppliedJob WHERE jobID=%s AND userID=%s", (jobID, userID))
         row = cur.fetchall()
-        user_name = get_user_name(cur, userId)
+        user_name = get_user_name(cur, userID)
         cur.close()
         if (len(row) == 1):
-            resume = row[0]
-            resume_extension = row[1]
-            return send_file(BytesIO(resume.data), attachment_filename=f"{user_name} resume.{resume_extension}", as_attachment=True), 200
+            resume = row[0][0]
+            resume_extension = row[0][1]
+            return send_file(BytesIO(resume), attachment_filename=f"{user_name} resume.{resume_extension}", as_attachment=True), 200
         else:
             return jsonify(message="Could not find applicant resume"), 400
     except Exception as e:
