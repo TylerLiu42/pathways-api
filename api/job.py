@@ -1,8 +1,11 @@
 import uuid
 import sys
 from uuid import uuid4
-from flask import request, jsonify
+from io import BytesIO
+from flask import request, jsonify, send_file
 from email_notification import sent_recruiter_applied_job, sent_applicant_applied_job, sent_interview_selected
+
+ALLOWED_EXTENSIONS = ['pdf', 'png', 'jpg', 'jpeg']
 
 def get_single_job_post(mysql):
     jobID = request.args.get('jobID')
@@ -85,14 +88,37 @@ def delete_job_post(mysql):
 def apply_job_post(mysql):
     jobID = request.args.get('jobID')
     userID = request.args.get('userID')
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify(message="No resume file selected"), 400
+    elif not allowed_file(file.filename):
+        return jsonify(message=f"Resume file type not suppported. Supported types: {', '.join(ALLOWED_EXTENSIONS)}"), 400
     try:
         cur = mysql.connection.cursor()
-        cur.execute("INSERT INTO AppliedJob VALUES (%s, %s, UTC_TIMESTAMP(), false)", (jobID, userID))
+        cur.execute("INSERT INTO AppliedJob VALUES (%s, %s, UTC_TIMESTAMP(), false, %s, %s)", (jobID, userID, file, get_file_extension(file.filename)))
         mysql.connection.commit()
         cur.close()
         sent_recruiter_applied_job(mysql, userID, jobID)
         sent_applicant_applied_job(mysql, userID, jobID)
         return jsonify(message=f"userID {userID} applied to jobID {jobID} successfully"), 200
+    except Exception as e:
+        return jsonify(message=repr(e)), 400
+
+def get_applicant_resume(mysql):
+    jobID = request.args.get('jobID')
+    userID = request.args.get('userID')
+    try:
+        cur = mysql.connection.cursor()
+        cur.execute("SELECT resume, resume_extension AppliedJob WHERE jobID=%s AND userID=%s", (jobID, userID))
+        row = cur.fetchall()
+        user_name = get_user_name(cur, userId)
+        cur.close()
+        if (len(row) == 1):
+            resume = row[0]
+            resume_extension = row[1]
+            return send_file(BytesIO(resume.data), attachment_filename=f"{user_name} resume.{resume_extension}", as_attachment=True), 200
+        else:
+            return jsonify(message="Could not find applicant resume"), 400
     except Exception as e:
         return jsonify(message=repr(e)), 400
 
@@ -151,6 +177,17 @@ def view_applied_job_posts(mysql):
             return jsonify(applied = row_count, applied_jobs = applied_jobs), 200
     except Exception as e:
         return jsonify(message=repr(e)), 400
+
+def allowed_file(filename):
+    return '.' in filename and \
+           get_file_extension(filename) in ALLOWED_EXTENSIONS
+
+def get_file_extension(filename):
+    return filename.rsplit('.', 1)[1].lower()
+
+def get_user_name(cur, userID):
+    cur.execute("SELECT name FROM Users WHERE userID = %s", [userID])
+    return cur.fetchone()[0]
 
 def to_jobs_json(jobs):
     return list(map(lambda job: to_job_json(job), jobs))
