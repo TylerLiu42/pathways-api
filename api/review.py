@@ -53,10 +53,15 @@ def get_job_reviews(mysql):
     jobID = request.args.get('jobID')
     cur = mysql.connection.cursor()
     cur.execute("""SELECT name, content, date_created, flagged, stars from JobReview JOIN Users USING (userID) 
-                WHERE jobID = %s ORDER BY date_created DESC""", (jobID))
-    rows = cur.fetchall()
+                WHERE jobID = %s AND flagged = false ORDER BY date_created DESC""", [jobID])
+    non_flagged_rows = cur.fetchall()
     jobReviews = []
-    for row in rows:
+    for row in non_flagged_rows:
+        jobReviews.append({"author": row[0], "content": row[1], "date_created": row[2], "flagged": row[3], "stars": row[4]})
+    cur.execute("""SELECT name, content, date_created, flagged, stars from JobReview JOIN Users USING (userID) 
+                WHERE jobID = %s AND flagged = true ORDER BY date_created DESC""", [jobID])
+    flagged_rows = cur.fetchall()
+    for row in flagged_rows:
         jobReviews.append({"author": row[0], "content": row[1], "date_created": row[2], "flagged": row[3], "stars": row[4]})
     return jsonify(message="Success", jobReviews=jobReviews), 200
     
