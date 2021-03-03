@@ -66,6 +66,7 @@ CREATE TABLE JobPost (
     external_link varchar(1000),
     expiry_date datetime,
     date_created datetime,
+    company varchar(100),
     PRIMARY KEY (jobID),
     FOREIGN KEY (userID) references Users(userID)
 );
