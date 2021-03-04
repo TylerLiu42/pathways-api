@@ -29,14 +29,14 @@ def add_job_review(mysql):
         mysql.connection.commit()
         cur.close()
         return jsonify(message="Created, sentiment does not match rating", flagged=flagged), 200
-    cur.execute("SELECT COUNT(*) from JobReview WHERE jobID = %s", (jobID))
+    cur.execute("SELECT COUNT(*) from JobReview WHERE jobID = %s", [jobID])
     noOfReviews = cur.fetchone()[0]
     if noOfReviews < 3:
         cur.execute("INSERT INTO JobReview VALUES (%s, %s, %s, %s, UTC_TIMESTAMP(), %s, false, %s)", (reviewID, jobID, userID, content, review_score, stars))
         mysql.connection.commit()
         cur.close()
         return jsonify(message="Success", flagged=False), 200
-    cur.execute("SELECT AVG(sentiment_score) from JobReview WHERE jobID = %s", (jobID))
+    cur.execute("SELECT AVG(sentiment_score) from JobReview WHERE jobID = %s", [jobID])
     current_average_score = cur.fetchone()[0]
     if abs(current_average_score - review_score) > 1.75:
         flagged = True
@@ -52,17 +52,17 @@ def add_job_review(mysql):
 def get_job_reviews(mysql):
     jobID = request.args.get('jobID')
     cur = mysql.connection.cursor()
-    cur.execute("""SELECT name, content, date_created, flagged, stars from JobReview JOIN Users USING (userID) 
+    cur.execute("""SELECT reviewID, name, content, date_created, flagged, stars from JobReview JOIN Users USING (userID) 
                 WHERE jobID = %s AND flagged = false ORDER BY date_created DESC""", [jobID])
     non_flagged_rows = cur.fetchall()
     jobReviews = []
     for row in non_flagged_rows:
-        jobReviews.append({"author": row[0], "content": row[1], "date_created": row[2], "flagged": row[3], "stars": row[4]})
-    cur.execute("""SELECT name, content, date_created, flagged, stars from JobReview JOIN Users USING (userID) 
+        jobReviews.append({"reviewID": row[0], "author": row[1], "content": row[2], "date_created": row[3], "flagged": row[4], "stars": row[5]})
+    cur.execute("""SELECT reviewID, name, content, date_created, flagged, stars from JobReview JOIN Users USING (userID) 
                 WHERE jobID = %s AND flagged = true ORDER BY date_created DESC""", [jobID])
     flagged_rows = cur.fetchall()
     for row in flagged_rows:
-        jobReviews.append({"author": row[0], "content": row[1], "date_created": row[2], "flagged": row[3], "stars": row[4]})
+        jobReviews.append({"reviewID": row[0], "author": row[1], "content": row[2], "date_created": row[3], "flagged": row[4], "stars": row[5]})
     return jsonify(message="Success", jobReviews=jobReviews), 200
     
 def getAverageScore(scores):
