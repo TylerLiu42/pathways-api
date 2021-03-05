@@ -1,6 +1,7 @@
 from flask import request, jsonify, escape
 from uuid import uuid4
 import requests
+import datetime
 
 scoreMap = {"Verynegative": -2, "Negative": -1, "Neutral": 0, "Positive": 1, "Verypositive": 2}
 f = open("nlp_api_key.txt", "r")
@@ -40,14 +41,23 @@ def add_job_review(mysql):
     current_average_score = cur.fetchone()[0]
     if abs(current_average_score - review_score) > 1.75:
         flagged = True
-    cur.execute("INSERT INTO JobReview VALUES (%s, %s, %s, %s, UTC_TIMESTAMP(), %s, %s, %s)", (reviewID, jobID, userID, content, review_score, flagged, stars))
+    utc_timestamp = datetime.datetime.utcnow()
+    cur.execute("INSERT INTO JobReview VALUES (%s, %s, %s, %s, %s, %s, %s, %s)", (reviewID, jobID, userID, content, utc_timestamp, review_score, flagged, stars))
     mysql.connection.commit()
     cur.close()
     if flagged:
         message="Created, sentiment inconsistent with previous reviews"
     else: 
         message = "Success"
-    return jsonify(message=message, content=content, flagged=flagged), 200
+    review = {
+        'reviewID': reviewID,
+        'author': userID,
+        'content': content,
+        'flagged': flagged,
+        'stars': stars,
+        'date_created': utc_timestamp,
+    }
+    return jsonify(message=message, review=review, flagged=flagged), 200
 
 def get_job_reviews(mysql):
     jobID = request.args.get('jobID')
