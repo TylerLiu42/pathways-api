@@ -13,11 +13,12 @@ def get_single_job_post(mysql):
         cur = mysql.connection.cursor()
         cur.execute("SELECT * from JobPost where jobID = %s", [jobID])
         row = cur.fetchall()
-        cur.close()
         if (len(row) == 1):
-            job = to_job_json(row[0])
+            job = to_job_json(cur, row[0])
+            cur.close()
             return jsonify(job), 200
         else:
+            cur.close()
             return jsonify(message="Could not find job post."), 400
     except Exception as e:
         return jsonify(message=repr(e)), 400
@@ -28,8 +29,8 @@ def view_my_job_posts(mysql):
         cur = mysql.connection.cursor()
         cur.execute("SELECT jobID, title, remote, date_created, company from JobPost where userID = %s ORDER BY date_created DESC", [userID])
         rows = cur.fetchall()
+        jobs = to_jobs_json(cur, rows)
         cur.close()
-        jobs = to_jobs_json(rows)
         return jsonify(jobs = jobs), 200
     except Exception as e:
         return jsonify(message=repr(e)), 400
@@ -42,7 +43,7 @@ def get_job_posts(mysql):
         cur.execute("""SELECT jobID, title, remote, date_created, company from JobPost
         WHERE expiry_date>CURRENT_TIMESTAMP ORDER BY date_created DESC LIMIT %s OFFSET %s""", (int(limit), int(index)))
         rows = cur.fetchall()
-        jobs = to_jobs_json(rows)
+        jobs = to_jobs_json(cur, rows)
         cur.execute("SELECT * from JobPost WHERE expiry_date>CURRENT_TIMESTAMP")
         total_jobs = cur.rowcount
         cur.close()
@@ -152,16 +153,18 @@ def view_job_applicants(mysql):
         cur.execute("SELECT userID, date_applied, interview_selected FROM AppliedJob where jobID = %s", [jobID])
         rows = cur.fetchall()
         row_count = cur.rowcount
-        cur.close()
         if (row_count == 0):
-            return jsonify(applicants_count = row_count, applicants = []), 200
+            cur.close()
+            return jsonify(applicant_count = row_count, applicants = []), 200
         else:
             applicants = list(map(lambda applicant: {
                 "userID": applicant[0],
+                "name": get_user_name(cur, applicant[0]),
                 "date_applied": applicant[1],
                 "interview_selected": bool(applicant[2])
             }, rows))
-            return jsonify(applicants_count = row_count, applicants = applicants), 200
+            cur.close()
+            return jsonify(applicant_count = row_count, applicants = applicants), 200
     except Exception as e:
         return jsonify(message=repr(e)), 400
 
@@ -196,19 +199,24 @@ def get_user_name(cur, userID):
     cur.execute("SELECT name FROM Users WHERE userID = %s", [userID])
     return cur.fetchone()[0]
 
-def to_jobs_json(jobs):
-    return list(map(lambda job: to_minimum_job_json(job), jobs))
+def get_applicant_count(cur, jobID):
+    cur.execute("SELECT * FROM AppliedJob where jobID = %s", [jobID])
+    return cur.rowcount
 
-def to_minimum_job_json(job):
+def to_jobs_json(cur, jobs):
+    return list(map(lambda job: to_minimum_job_json(cur, job), jobs))
+
+def to_minimum_job_json(cur, job):
     return {
         "jobID": job[0],
         "title": job[1],
         "remote": bool(job[2]),
         "date_created": job[3],
-        "company": job[4]
+        "company": job[4],
+        "applicant_count": get_applicant_count(cur, job[0])
     }
 
-def to_job_json(job):
+def to_job_json(cur, job):
     return {
         "jobID": job[0],
         "userID": job[1],
@@ -221,5 +229,6 @@ def to_job_json(job):
         "external_link": job[8],
         "expiry_date": job[9],
         "date_created": job[10],
-        "company": job[11]
+        "company": job[11],
+        "applicant_count": get_applicant_count(cur, job[0])
     }
