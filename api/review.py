@@ -23,20 +23,31 @@ def add_job_review(mysql):
         headers={'api-key': api_key}
     ).json()
     review_score = getAverageScore(sentiment_scores['output'])
+    review = {
+        'reviewID': reviewID,
+        'author': userID,
+        'content': content,
+        'stars': stars,
+    }
     cur = mysql.connection.cursor()
     if abs(review_score - (int(stars) - 3)) >= 2:
-        flagged = True
+        utc_timestamp = datetime.datetime.utcnow()
         cur.execute("INSERT INTO JobReview VALUES (%s, %s, %s, %s, UTC_TIMESTAMP(), %s, true, %s)", (reviewID, jobID, userID, content, review_score, stars))
         mysql.connection.commit()
         cur.close()
-        return jsonify(message="Created, sentiment does not match rating", flagged=flagged), 200
+        review['flagged'] = True
+        review['date_created'] = utc_timestamp
+        return jsonify(message="Created, sentiment does not match rating", review=review), 200
     cur.execute("SELECT COUNT(*) from JobReview WHERE jobID = %s", [jobID])
     noOfReviews = cur.fetchone()[0]
     if noOfReviews < 3:
+        utc_timestamp = datetime.datetime.now()
         cur.execute("INSERT INTO JobReview VALUES (%s, %s, %s, %s, UTC_TIMESTAMP(), %s, false, %s)", (reviewID, jobID, userID, content, review_score, stars))
         mysql.connection.commit()
         cur.close()
-        return jsonify(message="Success", flagged=False), 200
+        review['flagged'] = False
+        review['date_created'] = utc_timestamp
+        return jsonify(message="Success", review=review), 200
     cur.execute("SELECT AVG(sentiment_score) from JobReview WHERE jobID = %s", [jobID])
     current_average_score = cur.fetchone()[0]
     if abs(current_average_score - review_score) > 1.75:
@@ -49,15 +60,9 @@ def add_job_review(mysql):
         message="Created, sentiment inconsistent with previous reviews"
     else: 
         message = "Success"
-    review = {
-        'reviewID': reviewID,
-        'author': userID,
-        'content': content,
-        'flagged': flagged,
-        'stars': stars,
-        'date_created': utc_timestamp,
-    }
-    return jsonify(message=message, review=review, flagged=flagged), 200
+    review['flagged'] = flagged
+    review['date_created'] = utc_timestamp
+    return jsonify(message=message, review=review), 200
 
 def get_job_reviews(mysql):
     jobID = request.args.get('jobID')
