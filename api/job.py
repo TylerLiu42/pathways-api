@@ -99,12 +99,15 @@ def apply_job_post(mysql):
         return jsonify(message=f"Resume file type not suppported. Supported types: {', '.join(ALLOWED_EXTENSIONS)}"), 400
     try:
         cur = mysql.connection.cursor()
-        cur.execute("INSERT INTO AppliedJob VALUES (%s, %s, UTC_TIMESTAMP(), false, %s, %s)", (jobID, userID, file.read(), get_file_extension(file.filename)))
+        resume = file.read()
+        extension = get_file_extension(file.filename)
+        cur.execute("INSERT INTO AppliedJob VALUES (%s, %s, UTC_TIMESTAMP(), false, %s, %s) ON DUPLICATE KEY UPDATE resume=%s, resume_extension=%s",
+        (jobID, userID, resume, extension, resume, extension))
         mysql.connection.commit()
         cur.close()
         sent_recruiter_applied_job(mysql, userID, jobID)
         sent_applicant_applied_job(mysql, userID, jobID)
-        return jsonify(message=f"userID {userID} applied to jobID {jobID} successfully"), 200
+        return jsonify(success=True), 200
     except Exception as e:
         return jsonify(message=repr(e)), 400
 
