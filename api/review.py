@@ -47,7 +47,7 @@ def add_job_review(mysql):
         message="Created, sentiment inconsistent with previous reviews"
     else: 
         message = "Success"
-    return jsonify(message=message, flagged=flagged), 200
+    return jsonify(message=message, content=content, flagged=flagged), 200
 
 def get_job_reviews(mysql):
     jobID = request.args.get('jobID')
