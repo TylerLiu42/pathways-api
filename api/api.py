@@ -5,6 +5,7 @@ import forum
 import resource_scraper
 import job
 import review
+import courses
 import sys
 app = Flask(__name__)
 cors = CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
@@ -132,6 +133,34 @@ def add_job_review():
 @app.route('/api/job_reviews', methods=['GET'])
 def get_job_reviews():
     return review.get_job_reviews(mysql)
+
+@app.route('/api/add_course', methods=['POST'])
+def add_course():
+    return courses.create_course(mysql)
+
+@app.route('/api/start_course', methods=['POST'])
+def start_course():
+    return courses.start_course(mysql)
+
+@app.route('/api/submit_quiz', methods=['POST'])
+def submit_quiz():
+    return courses.submit_quiz(mysql)
+
+@app.route('/api/quizzes', methods=['GET'])
+def get_quizzes():
+    return courses.get_quizzes(mysql)
+
+@app.route('/api/questions', methods=['GET'])
+def get_questions():
+    return courses.get_questions(mysql)
+
+@app.route('/api/courses', methods=['GET'])
+def get_courses():
+    return courses.get_courses(mysql)
+
+@app.route('/api/progress', methods=['GET'])
+def get_progress():
+    return courses.get_progress(mysql)
 
 if __name__ == '__main__':
     app.run(debug=True)

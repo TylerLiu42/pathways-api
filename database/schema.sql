@@ -96,3 +96,44 @@ CREATE TABLE JobReview (
 	FOREIGN KEY (jobID) references JobPost(jobID),
 	FOREIGN KEY (userID) references Users(userID)
 );
+
+CREATE TABLE Course(
+	courseID varchar(100) not null,
+	courseAuthorId varchar(100),
+	courseTitle varchar(1000),
+	PRIMARY KEY (courseID),
+	FOREIGN KEY (courseAuthorID) references Users(userID)
+);
+
+CREATE TABLE Quiz(
+	questionID varchar(100) not null,
+	quizID int not null,
+	courseID varchar(100),
+	answer varchar(1000),
+	question_string varchar(1000),
+	PRIMARY KEY (questionID, quizID, courseID),
+	FOREIGN KEY (courseID) references Course(courseID)
+);
+
+CREATE TABLE QuestionOption(
+	questionID varchar(100) not null,
+	optionID int not null,
+	courseID varchar(100) not null,
+	quizID int not null,
+	option_string varchar(1000),
+	PRIMARY KEY (questionID, optionID, courseID, quizID),
+	FOREIGN KEY (questionID, quizID, courseID) references Quiz(questionID, quizID, courseID)
+);
+
+CREATE TABLE CourseUser(
+	userID varchar(100) not null,
+	courseID varchar(100) not null,
+	quizID int not null,
+	completed boolean,
+	grade decimal(3,2),
+	PRIMARY KEY (userID, courseID, quizID),
+	FOREIGN KEY (userID) references Users(userID),
+	FOREIGN KEY (courseID) references Course(courseID),
+	CONSTRAINT grade_check_min CHECK (grade >= 0),
+	CONSTRAINT grade_check_max CHECK (grade <= 1)
+);
