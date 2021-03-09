@@ -162,5 +162,9 @@ def get_courses():
 def get_progress():
     return courses.get_progress(mysql)
 
+@app.route('/api/videos', methods=['GET'])
+def get_videos():
+    return courses.get_videos(mysql)
+
 if __name__ == '__main__':
     app.run(debug=True)

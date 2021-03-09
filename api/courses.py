@@ -7,8 +7,9 @@ def create_course(mysql):
     author = course.get('author')
     title = course.get('title')
     quizzes = course.get('quizzes')
+    video_links = course.get('videos')
     cur = mysql.connection.cursor()
-    cur.execute("INSERT INTO Course VALUES (%s, %s, %s)", (courseID, author, title))
+    cur.execute("INSERT INTO Course VALUES (%s, %s, %s, %s)", (courseID, author, title, ','.join(video_links)))
     mysql.connection.commit()
     for quizID, quiz in enumerate(quizzes):
         for questionID, questionInfo in quiz.items():
@@ -54,6 +55,13 @@ def to_map(rows):
     for row in rows:
         map[row[0]] = row[1]
     return map
+
+def get_videos(mysql):
+    cur = mysql.connection.cursor()
+    courseID = request.args.get('courseID')
+    cur.execute("SELECT videos FROM Course WHERE CourseID = %s", [courseID])
+    video_links = cur.fetchone()[0].split(',')
+    return jsonify(video_links=video_links), 200
 
 def get_quizzes(mysql):
     cur = mysql.connection.cursor()
