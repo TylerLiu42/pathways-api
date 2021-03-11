@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_mysqldb import MySQL
 from flask_cors import CORS
+from review import ReviewType
 import forum
 import resource_scraper
 import job
@@ -128,11 +129,19 @@ def get_applicant_resume():
 
 @app.route('/api/add_job_review', methods=['POST'])
 def add_job_review():
-    return review.add_job_review(mysql)
+    return review.add_review(mysql, ReviewType.JOB)
 
 @app.route('/api/job_reviews', methods=['GET'])
 def get_job_reviews():
-    return review.get_job_reviews(mysql)
+    return review.get_reviews(mysql, ReviewType.JOB)
+
+@app.route('/api/add_course_review', methods=['POST'])
+def add_course_review():
+    return review.add_review(mysql, ReviewType.COURSE)
+
+@app.route('/api/course_reviews', methods=['GET'])
+def get_course_reviews():
+    return review.get_reviews(mysql, ReviewType.COURSE)
 
 @app.route('/api/add_course', methods=['POST'])
 def add_course():

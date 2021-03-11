@@ -101,9 +101,23 @@ CREATE TABLE Course(
 	courseID varchar(100) not null,
 	courseAuthorId varchar(100),
 	courseTitle varchar(1000),
-	videos varchar(1000)
+	videos varchar(1000),
 	PRIMARY KEY (courseID),
 	FOREIGN KEY (courseAuthorID) references Users(userID)
+);
+
+CREATE TABLE CourseReview (
+	reviewID varchar(100) not null,
+	courseID varchar(100) not null,
+	userID varchar(100),
+	content varchar(10000),
+	date_created datetime,
+	sentiment_score float,
+	flagged boolean,
+	stars ENUM('1', '2', '3', '4', '5'),
+	PRIMARY KEY (reviewID),
+	FOREIGN KEY (courseID) references Course(courseID),
+	FOREIGN KEY (userID) references Users(userID)
 );
 
 CREATE TABLE Quiz(
