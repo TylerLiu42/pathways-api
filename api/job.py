@@ -175,15 +175,17 @@ def view_applied_job_posts(mysql):
         cur.execute("SELECT jobID, date_applied, interview_selected FROM AppliedJob where userID = %s", [userID])
         rows = cur.fetchall()
         row_count = cur.rowcount
-        cur.close()
         if (row_count == 0):
+            cur.close()
             return jsonify(applied = row_count, applied_jobs = []), 200
         else:
             applied_jobs = list(map(lambda applied_job: {
                 "jobID": applied_job[0],
+                "title": get_job_title(cur, applied_job[0]),
                 "date_applied": applied_job[1],
                 "interview_selected": bool(applied_job[2])
             }, rows))
+            cur.close()
             return jsonify(applied = row_count, applied_jobs = applied_jobs), 200
     except Exception as e:
         return jsonify(message=repr(e)), 400
@@ -202,6 +204,10 @@ def get_user_name(cur, userID):
 def get_applicant_count(cur, jobID):
     cur.execute("SELECT * FROM AppliedJob where jobID = %s", [jobID])
     return cur.rowcount
+
+def get_job_title(cur, jobID):
+    cur.execute("SELECT title FROM JobPost WHERE jobID = %s", [jobID])
+    return cur.fetchone()[0]
 
 def to_jobs_json(cur, jobs):
     return list(map(lambda job: to_minimum_job_json(cur, job), jobs))
