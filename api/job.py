@@ -150,7 +150,7 @@ def view_job_applicants(mysql):
     jobID = request.args.get('jobID')
     try:
         cur = mysql.connection.cursor()
-        cur.execute("SELECT userID, date_applied, interview_selected FROM AppliedJob where jobID = %s", [jobID])
+        cur.execute("SELECT userID, date_applied, interview_selected FROM AppliedJob where jobID = %s ORDER BY date_applied DESC", [jobID])
         rows = cur.fetchall()
         row_count = cur.rowcount
         if (row_count == 0):
@@ -172,7 +172,7 @@ def view_applied_job_posts(mysql):
     userID = request.args.get('userID')
     try:
         cur = mysql.connection.cursor()
-        cur.execute("SELECT jobID, date_applied, interview_selected FROM AppliedJob where userID = %s", [userID])
+        cur.execute("SELECT jobID, date_applied, interview_selected FROM AppliedJob where userID = %s ORDER BY date_applied DESC", [userID])
         rows = cur.fetchall()
         row_count = cur.rowcount
         if (row_count == 0):
