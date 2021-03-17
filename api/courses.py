@@ -149,4 +149,14 @@ def get_progress(mysql):
         )
     cur.close()
     return jsonify(courseProgress=response), 200
-    
+
+def get_mentor_courses(mysql):
+    cur = mysql.connection.cursor()
+    userID = request.args.get('userID')
+    cur.execute("SELECT courseID, courseTitle FROM Course WHERE courseAuthorId = %s", [userID])
+    rows = cur.fetchall()
+    courses = []
+    for row in rows:
+        courses.append({"courseID": row[0], "courseTitle": row[1]})
+    cur.close()
+    return jsonify(mentorCourses=courses), 200

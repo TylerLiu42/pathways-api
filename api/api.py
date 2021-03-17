@@ -175,5 +175,9 @@ def get_progress():
 def get_videos():
     return courses.get_videos(mysql)
 
+@app.route('/api/mentor_courses', methods=['GET'])
+def get_mentor_courses():
+    return courses.get_mentor_courses(mysql)
+
 if __name__ == '__main__':
     app.run(debug=True)
