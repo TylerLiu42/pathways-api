@@ -9,7 +9,7 @@ def create_course(mysql):
     quizzes = course.get('quizzes')
     video_links = course.get('videos')
     cur = mysql.connection.cursor()
-    cur.execute("INSERT INTO Course VALUES (%s, %s, %s, %s)", (courseID, author, title, ','.join(video_links)))
+    cur.execute("INSERT INTO Course VALUES (%s, %s, %s, %s, UTC_TIMESTAMP())", (courseID, author, title, ','.join(video_links)))
     mysql.connection.commit()
     for quizID, quiz in enumerate(quizzes):
         for questionID, questionInfo in quiz.items():
@@ -153,10 +153,10 @@ def get_progress(mysql):
 def get_mentor_courses(mysql):
     cur = mysql.connection.cursor()
     userID = request.args.get('userID')
-    cur.execute("SELECT courseID, courseTitle FROM Course WHERE courseAuthorId = %s", [userID])
+    cur.execute("SELECT courseID, courseTitle, date_created FROM Course WHERE courseAuthorId = %s", [userID])
     rows = cur.fetchall()
     courses = []
     for row in rows:
-        courses.append({"courseID": row[0], "courseTitle": row[1]})
+        courses.append({"courseID": row[0], "courseTitle": row[1], "date_created": row[2]})
     cur.close()
     return jsonify(mentorCourses=courses), 200

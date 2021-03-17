@@ -102,6 +102,7 @@ CREATE TABLE Course(
 	courseAuthorId varchar(100),
 	courseTitle varchar(1000),
 	videos varchar(1000),
+	date_created datetime,
 	PRIMARY KEY (courseID),
 	FOREIGN KEY (courseAuthorID) references Users(userID)
 );
