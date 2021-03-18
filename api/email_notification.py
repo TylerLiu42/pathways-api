@@ -38,15 +38,16 @@ def sent_recruiter_applied_job(mysql, applicant_userID, jobID):
 
     subject = f"New job applicant for {job_title}"
     body = f'''
-    Hey {recruiter_name},
+Hey {recruiter_name},
     
-    {applicant_name} just applied for {job_title}!
-    {job_title} job link: 
-    {job_link}
+{applicant_name} just applied for {job_title}!
+{job_title} 
+Job link: 
+{job_link}
 
-    Best,
+Best,
 
-    Pathways Team
+Pathways Team
     '''
     sent_email(recruiter_email, subject, dedent(body))
 
@@ -60,15 +61,16 @@ def sent_applicant_applied_job(mysql, applicant_userID, jobID):
 
     subject = f"Applied to {job_title} successfully"
     body = f'''
-    Hey {applicant_name}, 
+Hey {applicant_name}, 
     
-    You applied to {job_title} successfully. 
-    {job_title} job link: 
-    {job_link}
+You applied to {job_title} successfully. 
+{job_title} 
+Job link: 
+{job_link}
     
-    Best,
+Best,
 
-    Pathways Team
+Pathways Team
     '''
     sent_email(applicant_email, subject, dedent(body))
 
@@ -82,21 +84,22 @@ def sent_interview_selected(mysql, applicant_userID, jobID, message, interview_l
 
     subject = f"Congratulations! You have been selected to {job_title} interview"
     body = f'''
-    Hey {applicant_name}, 
+Hey {applicant_name}, 
     
-    You have been selected to {job_title} interview!
-    
-    Recruiter message: 
-    {message}
+You have been selected to {job_title} interview!
 
-    Interview link: 
-    {interview_link}
-    {job_title} job link: 
-    {job_link}
+Recruiter message: 
+{message}
 
-    Best,
+Interview link: 
+{interview_link}
+{job_title}
+Job link: 
+{job_link}
 
-    Pathways Team
+Best,
+
+Pathways Team
     '''
     sent_email(applicant_email, subject, dedent(body))
 
