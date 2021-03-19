@@ -19,7 +19,7 @@ def create_course(mysql):
                 cur.execute("INSERT INTO QuestionOption VALUES (%s, %s, %s, %s, %s)", (questionID, optionID, courseID, quizID, option))
                 mysql.connection.commit()
     cur.close()
-    return jsonify(message="Success"), 200
+    return jsonify(message="Success", courseID=courseID), 200
 
 def start_course(mysql):
     request_body = request.get_json()
