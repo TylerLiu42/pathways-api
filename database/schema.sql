@@ -101,6 +101,7 @@ CREATE TABLE Course(
 	courseID varchar(100) not null,
 	courseAuthorId varchar(100),
 	courseTitle varchar(1000),
+	description varchar(1000),
 	videos varchar(1000),
 	date_created datetime,
 	PRIMARY KEY (courseID),

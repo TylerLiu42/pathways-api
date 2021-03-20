@@ -167,6 +167,10 @@ def get_questions():
 def get_courses():
     return courses.get_courses(mysql)
 
+@app.route('/api/individual_course', methods=['GET'])
+def get_course():
+    return courses.get_course(mysql)
+
 @app.route('/api/progress', methods=['GET'])
 def get_progress():
     return courses.get_progress(mysql)
