@@ -125,11 +125,12 @@ def get_courses(mysql):
 def get_course(mysql):
     cur = mysql.connection.cursor()
     courseID = request.args.get('courseID')
-    cur.execute("""SELECT courseTitle, date_created, description, courseAuthorID, videos, count(distinct QuizID) 
-                FROM Course JOIN Quiz using (CourseID) WHERE courseID = %s""", [courseID])
+    cur.execute("""SELECT courseTitle, date_created, description, name, videos, count(distinct QuizID) 
+                FROM Course JOIN Quiz using (CourseID) JOIN Users ON Course.courseAuthorID = Users.userID 
+                WHERE courseID = %s""", [courseID])
     row = cur.fetchone()
     noOfVideos = len(row[4].split(","))
-    response = {"courseTitle": row[0], "date_created": row[1], "description": row[2], "courseAuthorID": row[3], 
+    response = {"courseTitle": row[0], "date_created": row[1], "description": row[2], "author": row[3], 
                 "videoCount": noOfVideos, "quizCount": row[5]}
     cur.close()
     return jsonify(course=response), 200
