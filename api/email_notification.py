@@ -41,7 +41,7 @@ def sent_recruiter_applied_job(mysql, applicant_userID, jobID):
 Hey {recruiter_name},
     
 {applicant_name} just applied for {job_title}!
-{job_title} 
+
 Job link: 
 {job_link}
 
@@ -64,7 +64,7 @@ def sent_applicant_applied_job(mysql, applicant_userID, jobID):
 Hey {applicant_name}, 
     
 You applied to {job_title} successfully. 
-{job_title} 
+
 Job link: 
 {job_link}
     
@@ -93,7 +93,7 @@ Recruiter message:
 
 Interview link: 
 {interview_link}
-{job_title}
+
 Job link: 
 {job_link}
 
