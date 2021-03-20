@@ -8,8 +8,9 @@ def create_course(mysql):
     title = course.get('title')
     quizzes = course.get('quizzes')
     video_links = course.get('videos')
+    description = course.get('description')
     cur = mysql.connection.cursor()
-    cur.execute("INSERT INTO Course VALUES (%s, %s, %s, %s, UTC_TIMESTAMP())", (courseID, author, title, ','.join(video_links)))
+    cur.execute("INSERT INTO Course VALUES (%s, %s, %s, %s, %s, UTC_TIMESTAMP())", (courseID, author, title, description, ','.join(video_links)))
     mysql.connection.commit()
     for quizID, quiz in enumerate(quizzes):
         for questionID, questionInfo in quiz.items():
