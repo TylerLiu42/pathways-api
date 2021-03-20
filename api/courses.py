@@ -114,11 +114,11 @@ def get_questions(mysql):
     
 def get_courses(mysql):
     cur = mysql.connection.cursor()
-    cur.execute("SELECT DISTINCT courseID, name, courseTitle from Course JOIN Users ON Course.courseAuthorID = Users.userID")
+    cur.execute("SELECT DISTINCT courseID, name, courseTitle, date_created from Course JOIN Users ON Course.courseAuthorID = Users.userID")
     rows = cur.fetchall()
     courses = {}
     for row in rows:
-        courses[row[0]] = {"author": row[1], "title": row[2]}
+        courses[row[0]] = {"author": row[1], "title": row[2], "date_created": row[3]}
     cur.close()
     return jsonify(courses=courses), 200
 
