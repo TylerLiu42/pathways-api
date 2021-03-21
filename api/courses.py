@@ -42,14 +42,18 @@ def submit_quiz(mysql):
     cur.execute("SELECT questionID, answer FROM Quiz WHERE quizID = %s AND courseID = %s", (quizID, courseID))
     answer_map = to_map(cur.fetchall())
     correctQuestions = 0
+    graded_questions = []
     for questionID, user_answer in request_body['submission'].items():
         if answer_map[questionID] == user_answer:
             correctQuestions += 1
+            graded_questions.append({"questionID": questionID, "correct": True})
+        else:
+            graded_questions.append({"questionID": questionID, "correct": False, "correctAnswer": answer_map[questionID]})
     cur.execute("""UPDATE CourseUser SET completed = true, grade = %s WHERE userID = %s AND courseID = %s 
                 AND quizID = %s""", (correctQuestions/len(answer_map), userID, courseID, quizID))
     mysql.connection.commit()
     cur.close()
-    return jsonify(message="Quiz submitted", grade=correctQuestions/len(answer_map)), 200
+    return jsonify(message="Quiz submitted", grade=correctQuestions/len(answer_map), graded_questions=graded_questions), 200
     
 def to_map(rows):
     map = {}
