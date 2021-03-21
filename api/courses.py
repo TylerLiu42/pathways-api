@@ -22,7 +22,7 @@ def create_course(mysql):
     cur.close()
     return jsonify(message="Success", courseID=courseID), 200
 
-def start_course(mysql):
+def start_quiz(mysql):
     request_body = request.get_json()
     userID = request_body['userID']
     courseID = request_body['courseID']

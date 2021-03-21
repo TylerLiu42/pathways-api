@@ -148,7 +148,7 @@ def add_course():
     return courses.create_course(mysql)
 
 @app.route('/api/start_course', methods=['POST'])
-def start_course():
+def start_quiz():
     return courses.start_course(mysql)
 
 @app.route('/api/submit_quiz', methods=['POST'])
