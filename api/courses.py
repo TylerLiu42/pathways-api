@@ -28,6 +28,10 @@ def start_quiz(mysql):
     courseID = request_body['courseID']
     quizID = request_body['quizID']
     cur = mysql.connection.cursor()
+    cur.execute("SELECT COUNT(*) FROM CourseUser WHERE userID = %s AND courseID = %s AND quizID = %s", (userID, courseID, quizID))
+    row_count = cur.fetchone()
+    if row_count == 1:
+        return jsonify(message="Quiz already started/completed"), 405
     cur.execute("INSERT INTO CourseUser (userID, courseID, quizID, completed) VALUES (%s, %s, %s, false)", (userID, courseID, quizID))
     mysql.connection.commit()
     cur.close()
@@ -136,7 +140,7 @@ def get_course(mysql):
     cur = mysql.connection.cursor()
     courseID = request.args.get('courseID')
     cur.execute("""SELECT courseTitle, date_created, description, name, videos, count(distinct QuizID) 
-                FROM Course JOIN Quiz using (CourseID) JOIN Users ON Course.courseAuthorID = Users.userID 
+                FROM Course LEFT JOIN Quiz using (CourseID) JOIN Users ON Course.courseAuthorID = Users.userID 
                 WHERE courseID = %s""", [courseID])
     row = cur.fetchone()
     noOfVideos = len(row[4].split(","))
