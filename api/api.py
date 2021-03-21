@@ -147,9 +147,9 @@ def get_course_reviews():
 def add_course():
     return courses.create_course(mysql)
 
-@app.route('/api/start_course', methods=['POST'])
+@app.route('/api/start_quiz', methods=['POST'])
 def start_quiz():
-    return courses.start_course(mysql)
+    return courses.start_quiz(mysql)
 
 @app.route('/api/submit_quiz', methods=['POST'])
 def submit_quiz():

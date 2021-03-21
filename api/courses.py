@@ -88,8 +88,10 @@ def get_quizzes(mysql):
             quizzes.append({"quizID": currentQuizID, "questionIDs": questionIDs})
         else:
             questionIDs.append(row[2])
+    cur.execute("SELECT courseTitle FROM Course WHERE CourseID = %s", [courseID])
+    row = cur.fetchone()
     cur.close()
-    return jsonify(quizzes=quizzes), 200
+    return jsonify(quizzes=quizzes, courseTitle=row[0]), 200
     
 def get_questions(mysql):
     cur = mysql.connection.cursor()
@@ -115,8 +117,10 @@ def get_questions(mysql):
             response.append({"questionID": row[0], "question_string": row[2], "options": options})
         else:
             options.append(row[1])
+    cur.execute("SELECT courseTitle FROM Course WHERE CourseID = %s", [courseID])
+    row = cur.fetchone()
     cur.close()
-    return jsonify(questions=response), 200
+    return jsonify(questions=response, courseTitle=row[0]), 200
     
 def get_courses(mysql):
     cur = mysql.connection.cursor()
