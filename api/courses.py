@@ -60,9 +60,10 @@ def to_map(rows):
 def get_videos(mysql):
     cur = mysql.connection.cursor()
     courseID = request.args.get('courseID')
-    cur.execute("SELECT videos FROM Course WHERE CourseID = %s", [courseID])
-    video_links = cur.fetchone()[0].split(',')
-    return jsonify(video_links=video_links), 200
+    cur.execute("SELECT videos, courseTitle FROM Course WHERE CourseID = %s", [courseID])
+    row = cur.fetchone()
+    video_links = row[0].split(',')
+    return jsonify(video_links=video_links, courseTitle=row[1]), 200
 
 def get_quizzes(mysql):
     cur = mysql.connection.cursor()
