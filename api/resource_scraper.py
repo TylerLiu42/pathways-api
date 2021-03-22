@@ -42,13 +42,13 @@ def scrape_medium(content):
     article_links_div = soup.findAll('div', "postArticle-content", limit=5)
     for div in article_links_div:
         for a in div.find_all('a'):
-            links.append(a['data-action-value'])
-    
+            if a['data-action-value'] is not None:
+                links.append(a['data-action-value'])
     for title in article_titles_div:
         for h3 in title.find_all('h3'):
             titles.append(h3.text)
         
-    for i in range(len(titles)):
+    for i in range(min(len(titles), len(links))):
         article_info.append({"title": titles[i], "url": links[i]})
         
     return article_info
