@@ -128,7 +128,8 @@ def get_questions(mysql):
     
 def get_courses(mysql):
     cur = mysql.connection.cursor()
-    cur.execute("SELECT DISTINCT courseID, name, courseTitle, date_created from Course JOIN Users ON Course.courseAuthorID = Users.userID")
+    cur.execute("""SELECT DISTINCT courseID, name, courseTitle, date_created from Course 
+                JOIN Users ON Course.courseAuthorID = Users.userID ORDER BY date_created DESC""")
     rows = cur.fetchall()
     courses = {}
     for row in rows:
