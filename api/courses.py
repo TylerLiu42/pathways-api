@@ -29,7 +29,7 @@ def start_quiz(mysql):
     quizID = request_body['quizID']
     cur = mysql.connection.cursor()
     cur.execute("SELECT COUNT(*) FROM CourseUser WHERE userID = %s AND courseID = %s AND quizID = %s", (userID, courseID, quizID))
-    row_count = cur.fetchone()
+    row_count = cur.fetchone()[0]
     if row_count == 1:
         return jsonify(message="Quiz already started/completed"), 405
     cur.execute("INSERT INTO CourseUser (userID, courseID, quizID, completed) VALUES (%s, %s, %s, false)", (userID, courseID, quizID))
