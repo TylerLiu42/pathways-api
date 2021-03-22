@@ -6,9 +6,8 @@ import asyncio
 import requests
 
 def get_resources():
-    # payload = request.get_json()
-    tags = request.args.get('tags')
-    # tags = payload.get('tags')
+    payload = request.get_json()
+    tags = payload.get('tags')
     response = {}
     session = FuturesSession()
     futures_medium = []

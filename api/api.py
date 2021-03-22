@@ -83,7 +83,7 @@ def get_replies():
 def vote():
     return forum.vote(mysql)
 
-@app.route('/api/resources', methods=['GET'])
+@app.route('/api/resources', methods=['POST'])
 def resources():
     return resource_scraper.get_resources()
 
