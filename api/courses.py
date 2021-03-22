@@ -152,16 +152,18 @@ def get_course(mysql):
 def get_progress(mysql):
     cur = mysql.connection.cursor()
     userID = request.args.get('userID')
-    cur.execute("SELECT courseID, quizID, completed, grade FROM CourseUser WHERE userID = %s ORDER BY courseID", [userID])
+    cur.execute("""SELECT courseID, quizID, completed, grade, courseTitle FROM CourseUser 
+                JOIN Course USING (courseID) WHERE userID = %s ORDER BY courseID""", [userID])
     rows = cur.fetchall()
     response = []
     course_map = {}
     completed = 0
-    totalQuizzes = 0
     gradeSum = 0
     for i, row in enumerate(rows):
         if row[0] not in course_map:
-            course_map[row[0]] = {"completed": 0, "totalQuizzes": 1, "gradeSum": 0}
+            cur.execute("SELECT COUNT(DISTINCT quizID) FROM Quiz WHERE courseID = %s", [row[0]])
+            totalQuizzes = cur.fetchone()[0]
+            course_map[row[0]] = {"completed": 0, "totalQuizzes": totalQuizzes, "gradeSum": 0, "courseTitle": row[4]}
             if row[2]:
                 course_map[row[0]]["completed"] += 1
                 course_map[row[0]]["gradeSum"] += row[3]
@@ -169,10 +171,12 @@ def get_progress(mysql):
             if row[2]:
                 course_map[row[0]]["completed"] += 1
                 course_map[row[0]]["gradeSum"] += row[3]
-            course_map[row[0]]["totalQuizzes"] += 1
     for key, value in course_map.items():
         response.append(
-            {"courseID": key, "progress": float(value["completed"]/value["totalQuizzes"]), "avgGrade": float(value["gradeSum"]/value["completed"])}
+            {"courseID": key, 
+             "courseTitle": value["courseTitle"], 
+             "progress": float(value["completed"]/value["totalQuizzes"]), 
+             "avgGrade": float(value["gradeSum"]/value["completed"])}
         )
     cur.close()
     return jsonify(courseProgress=response), 200
