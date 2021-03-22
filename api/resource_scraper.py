@@ -42,8 +42,10 @@ def scrape_medium(content):
     article_links_div = soup.findAll('div', "postArticle-content", limit=5)
     for div in article_links_div:
         for a in div.find_all('a'):
-            if a['data-action-value'] is not None:
+            try:
                 links.append(a['data-action-value'])
+            except KeyError:
+                continue;
     for title in article_titles_div:
         for h3 in title.find_all('h3'):
             titles.append(h3.text)
