@@ -131,9 +131,9 @@ def get_courses(mysql):
     cur.execute("""SELECT DISTINCT courseID, name, courseTitle, date_created from Course 
                 JOIN Users ON Course.courseAuthorID = Users.userID ORDER BY date_created DESC""")
     rows = cur.fetchall()
-    courses = {}
+    courses = []
     for row in rows:
-        courses[row[0]] = {"author": row[1], "title": row[2], "date_created": row[3]}
+        courses.append({"courseID": row[0], "author": row[1], "title": row[2], "date_created": row[3]})
     cur.close()
     return jsonify(courses=courses), 200
 
