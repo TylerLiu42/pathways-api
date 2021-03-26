@@ -5,7 +5,7 @@ from io import BytesIO
 from flask import request, jsonify, send_file
 from email_notification import sent_recruiter_applied_job, sent_applicant_applied_job, sent_interview_selected
 
-ALLOWED_EXTENSIONS = ['pdf', 'png', 'jpg', 'jpeg']
+ALLOWED_EXTENSIONS = ('pdf', 'png', 'jpg', 'jpeg')
 
 def get_single_job_post(mysql):
     jobID = request.args.get('jobID')
